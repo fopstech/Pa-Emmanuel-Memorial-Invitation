@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Pa Emmanuel Memorial Invitation"
+description = "A premium digital memorial invitation for Pa Emmanuel Ayodele Abatan, with public event details, private guest invitations, RSVP, admin guest management, and secure one-time phone check-in."
+version = "1.0.0"
+id = "artifacts/memorial-invitation"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22480
+
+[services.development]
+run = "pnpm --filter @workspace/memorial-invitation run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/memorial-invitation", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/memorial-invitation/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22480"
+BASE_PATH = "/"

@@ -3,13 +3,21 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Pa Emmanuel Ayodele Abatan memorial invitation API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: event
+    description: Public memorial event content
+  - name: invitations
+    description: Guest invitations and RSVP
+  - name: admin
+    description: Authenticated family and usher administration
+  - name: storage
+    description: Protected photo uploads
 paths:
   /healthz:
     get:
@@ -24,6 +32,431 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /event:
+    get:
+      operationId: getEvent
+      tags: [event]
+      summary: Get public memorial event
+      responses:
+        "200":
+          description: Event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+    patch:
+      operationId: updateEvent
+      tags: [admin]
+      summary: Update memorial event settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /programme:
+    get:
+      operationId: listProgramme
+      tags: [event]
+      summary: List funeral programme items
+      responses:
+        "200":
+          description: Programme items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgrammeItem"
+    post:
+      operationId: createProgrammeItem
+      tags: [admin]
+      summary: Add programme item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgrammeItemInput"
+      responses:
+        "201":
+          description: Created programme item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgrammeItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /programme/{id}:
+    patch:
+      operationId: updateProgrammeItem
+      tags: [admin]
+      summary: Update programme item
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgrammeItemUpdate"
+      responses:
+        "200":
+          description: Updated programme item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgrammeItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      operationId: deleteProgrammeItem
+      tags: [admin]
+      summary: Delete programme item
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /public/invitations/{token}:
+    get:
+      operationId: getPublicInvitation
+      tags: [invitations]
+      summary: Get a guest invitation by secure token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicInvitation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /public/invitations/{token}/rsvp:
+    post:
+      operationId: submitRsvp
+      tags: [invitations]
+      summary: Submit RSVP for a guest invitation
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RsvpInput"
+      responses:
+        "200":
+          description: Updated invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicInvitation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Get dashboard counts and recent activity
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/guests:
+    get:
+      operationId: listGuests
+      tags: [admin]
+      summary: List and filter guests
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [all, pending, confirmed, checked_in, disabled]
+        - name: rsvp
+          in: query
+          schema:
+            type: string
+            enum: [all, yes, no, pending]
+      responses:
+        "200":
+          description: Guests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminGuest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createGuest
+      tags: [admin]
+      summary: Create a guest and invitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestInput"
+      responses:
+        "201":
+          description: Guest and invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGuest"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/guests/import:
+    post:
+      operationId: importGuests
+      tags: [admin]
+      summary: Import guests from CSV text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestImportInput"
+      responses:
+        "200":
+          description: Import results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GuestImportResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/guests/{id}:
+    get:
+      operationId: getGuest
+      tags: [admin]
+      summary: Get one guest
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGuest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateGuest
+      tags: [admin]
+      summary: Update guest and invitation
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestUpdate"
+      responses:
+        "200":
+          description: Updated guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGuest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      operationId: deleteGuest
+      tags: [admin]
+      summary: Delete guest and invitation
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/guests/{id}/disable:
+    post:
+      operationId: disableInvitation
+      tags: [admin]
+      summary: Disable an invitation
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Updated guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGuest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/guests/{id}/enable:
+    post:
+      operationId: enableInvitation
+      tags: [admin]
+      summary: Enable an invitation
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Updated guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGuest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/guests/{id}/regenerate:
+    post:
+      operationId: regenerateInvitation
+      tags: [admin]
+      summary: Generate a new invitation code and token
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Updated guest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminGuest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/invitations/lookup:
+    post:
+      operationId: lookupInvitation
+      tags: [admin]
+      summary: Validate an invitation code before admission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationLookupInput"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationLookupResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/invitations/{id}/admit:
+    post:
+      operationId: admitInvitation
+      tags: [admin]
+      summary: Atomically admit an invitation once
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Admission result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdmissionResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/check-ins:
+    get:
+      operationId: listCheckIns
+      tags: [admin]
+      summary: List check-in history
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: filter
+          in: query
+          schema:
+            type: string
+            enum: [all, checked_in, not_checked_in, disabled, rsvp_yes, rsvp_no]
+      responses:
+        "200":
+          description: Check-ins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckInRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /admin/audit:
+    get:
+      operationId: listAuditLog
+      tags: [admin]
+      summary: List recent admin actions
+      responses:
+        "200":
+          description: Audit log
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditRecord"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a presigned image upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadRequest"
+      responses:
+        "200":
+          description: Upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +466,266 @@ components:
           type: string
       required:
         - status
+    Event:
+      type: object
+      required: [id, deceasedName, eventTitle, waykeepDate, burialDate, venue, dressCode]
+      properties:
+        id: { type: number }
+        deceasedName: { type: string }
+        eventTitle: { type: string }
+        waykeepDate: { type: string }
+        burialDate: { type: string }
+        year: { type: ["number", "null"] }
+        venue: { type: string }
+        dressCode: { type: string }
+        biography: { type: ["string", "null"] }
+        tribute: { type: ["string", "null"] }
+        importantInformation: { type: ["string", "null"] }
+        directions: { type: ["string", "null"] }
+        contactInformation: { type: ["string", "null"] }
+        mapUrl: { type: ["string", "null"] }
+        photoUrl: { type: ["string", "null"] }
+        backgroundImageUrl: { type: ["string", "null"] }
+    EventUpdate:
+      type: object
+      properties:
+        deceasedName: { type: string }
+        eventTitle: { type: string }
+        waykeepDate: { type: string }
+        burialDate: { type: string }
+        year: { type: ["number", "null"] }
+        venue: { type: string }
+        dressCode: { type: string }
+        biography: { type: ["string", "null"] }
+        tribute: { type: ["string", "null"] }
+        importantInformation: { type: ["string", "null"] }
+        directions: { type: ["string", "null"] }
+        contactInformation: { type: ["string", "null"] }
+        mapUrl: { type: ["string", "null"] }
+        photoUrl: { type: ["string", "null"] }
+        backgroundImageUrl: { type: ["string", "null"] }
+    ProgrammeItem:
+      type: object
+      required: [id, title, date, sortOrder]
+      properties:
+        id: { type: number }
+        title: { type: string }
+        date: { type: string }
+        time: { type: ["string", "null"] }
+        location: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        sortOrder: { type: number }
+    ProgrammeItemInput:
+      type: object
+      required: [title, date]
+      properties:
+        title: { type: string }
+        date: { type: string }
+        time: { type: ["string", "null"] }
+        location: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        sortOrder: { type: number }
+    ProgrammeItemUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        date: { type: string }
+        time: { type: ["string", "null"] }
+        location: { type: ["string", "null"] }
+        description: { type: ["string", "null"] }
+        sortOrder: { type: number }
+    PublicInvitation:
+      type: object
+      required: [guestName, invitationCode, admissionLimit, status, rsvpStatus, event, programme]
+      properties:
+        guestName: { type: string }
+        invitationCode: { type: string }
+        admissionLimit: { type: number }
+        status:
+          type: string
+          enum: [pending, confirmed, checked_in, disabled]
+        rsvpStatus:
+          type: string
+          enum: [pending, yes, no]
+        event:
+          $ref: "#/components/schemas/Event"
+        programme:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgrammeItem"
+        checkedInAt: { type: ["string", "null"], format: date-time }
+    RsvpInput:
+      type: object
+      required: [response]
+      properties:
+        response:
+          type: string
+          enum: [yes, no]
+    GuestInput:
+      type: object
+      required: [fullName]
+      properties:
+        fullName: { type: string, minLength: 2 }
+        phone: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        admissionLimit: { type: number, minimum: 1, default: 1 }
+    GuestUpdate:
+      type: object
+      properties:
+        fullName: { type: string, minLength: 2 }
+        phone: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        admissionLimit: { type: number, minimum: 1 }
+    AdminGuest:
+      type: object
+      required: [id, invitationId, fullName, invitationCode, invitationToken, admissionLimit, status, rsvpStatus, createdAt]
+      properties:
+        id: { type: number }
+        invitationId: { type: number }
+        fullName: { type: string }
+        phone: { type: ["string", "null"] }
+        email: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        invitationCode: { type: string }
+        invitationToken: { type: string }
+        admissionLimit: { type: number }
+        status:
+          type: string
+          enum: [pending, confirmed, checked_in, disabled]
+        rsvpStatus:
+          type: string
+          enum: [pending, yes, no]
+        createdAt: { type: string, format: date-time }
+        checkedInAt: { type: ["string", "null"], format: date-time }
+        checkedInBy: { type: ["string", "null"] }
+    GuestImportInput:
+      type: object
+      required: [csv]
+      properties:
+        csv: { type: string, minLength: 1 }
+    GuestImportResult:
+      type: object
+      required: [created, errors]
+      properties:
+        created:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminGuest"
+        errors:
+          type: array
+          items:
+            type: object
+            required: [row, message]
+            properties:
+              row: { type: number }
+              message: { type: string }
+    InvitationLookupInput:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 4 }
+    InvitationLookupResult:
+      type: object
+      required: [result]
+      properties:
+        result:
+          type: string
+          enum: [valid, used, disabled, invalid]
+        invitation:
+          anyOf:
+            - $ref: "#/components/schemas/AdminGuest"
+            - type: "null"
+    AdmissionResult:
+      type: object
+      required: [result]
+      properties:
+        result:
+          type: string
+          enum: [admitted, used, disabled, not_found]
+        invitation:
+          anyOf:
+            - $ref: "#/components/schemas/AdminGuest"
+            - type: "null"
+        checkedInAt: { type: ["string", "null"], format: date-time }
+    DashboardSummary:
+      type: object
+      required: [totalInvited, confirmed, pending, checkedIn, notCheckedIn, disabled, rsvpYes, rsvpNo]
+      properties:
+        totalInvited: { type: number }
+        confirmed: { type: number }
+        pending: { type: number }
+        checkedIn: { type: number }
+        notCheckedIn: { type: number }
+        disabled: { type: number }
+        rsvpYes: { type: number }
+        rsvpNo: { type: number }
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditRecord"
+    CheckInRecord:
+      type: object
+      required: [id, guestName, invitationCode, checkedInAt, checkedInBy]
+      properties:
+        id: { type: number }
+        guestName: { type: string }
+        invitationCode: { type: string }
+        checkedInAt: { type: string, format: date-time }
+        checkedInBy: { type: string }
+    AuditRecord:
+      type: object
+      required: [id, action, actor, createdAt]
+      properties:
+        id: { type: number }
+        action: { type: string }
+        target: { type: ["string", "null"] }
+        actor: { type: string }
+        createdAt: { type: string, format: date-time }
+    UploadRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string }
+        size: { type: number, minimum: 1 }
+        contentType: { type: string }
+    UploadResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string }
+        objectPath: { type: string }
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: number
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string }
 
