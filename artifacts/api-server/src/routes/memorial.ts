@@ -53,7 +53,7 @@ import {
   UpdateProgrammeItemParams,
   UpdateProgrammeItemResponse,
 } from "@workspace/api-zod";
-import { requireAuth, type AuthenticatedRequest } from "../middlewares/auth";
+import { requireAdmin, type AuthenticatedRequest } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -187,7 +187,7 @@ router.get("/event", async (_req, res): Promise<void> => {
   res.json(GetEventResponse.parse(event));
 });
 
-router.patch("/event", requireAuth, async (req, res): Promise<void> => {
+router.patch("/event", requireAdmin, async (req, res): Promise<void> => {
   const parsed = UpdateEventBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid event settings" });
@@ -213,7 +213,7 @@ router.get("/programme", async (_req, res): Promise<void> => {
   res.json(ListProgrammeResponse.parse(rows));
 });
 
-router.post("/programme", requireAuth, async (req, res): Promise<void> => {
+router.post("/programme", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateProgrammeItemBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid programme item" });
@@ -228,7 +228,7 @@ router.post("/programme", requireAuth, async (req, res): Promise<void> => {
   await addAudit(req, "Programme item created", String(item.id));
 });
 
-router.patch("/programme/:id", requireAuth, async (req, res): Promise<void> => {
+router.patch("/programme/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateProgrammeItemParams.safeParse(req.params);
   const body = UpdateProgrammeItemBody.safeParse(req.body);
   if (!params.success || !body.success) {
@@ -248,7 +248,7 @@ router.patch("/programme/:id", requireAuth, async (req, res): Promise<void> => {
   await addAudit(req, "Programme item updated", String(item.id));
 });
 
-router.delete("/programme/:id", requireAuth, async (req, res): Promise<void> => {
+router.delete("/programme/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteProgrammeItemParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: "Invalid programme item" });
@@ -355,7 +355,7 @@ router.post("/public/invitations/:token/rsvp", async (req, res): Promise<void> =
   );
 });
 
-router.get("/admin/dashboard", requireAuth, async (_req, res): Promise<void> => {
+router.get("/admin/dashboard", requireAdmin, async (_req, res): Promise<void> => {
   const rows = await db.select({ status: invitationsTable.status, rsvp: invitationsTable.rsvpStatus }).from(invitationsTable);
   const totalInvited = rows.length;
   const checkedIn = rows.filter((r) => r.status === "checked_in").length;
@@ -380,7 +380,7 @@ router.get("/admin/dashboard", requireAuth, async (_req, res): Promise<void> => 
   );
 });
 
-router.get("/admin/guests", requireAuth, async (req, res): Promise<void> => {
+router.get("/admin/guests", requireAdmin, async (req, res): Promise<void> => {
   const query = ListGuestsQueryParams.safeParse(req.query);
   if (!query.success) {
     res.status(400).json({ error: "Invalid guest filters" });
@@ -389,7 +389,7 @@ router.get("/admin/guests", requireAuth, async (req, res): Promise<void> => {
   res.json(ListGuestsResponse.parse(await getAdminGuests(query.data.search, query.data.status, query.data.rsvp)));
 });
 
-router.post("/admin/guests", requireAuth, async (req, res): Promise<void> => {
+router.post("/admin/guests", requireAdmin, async (req, res): Promise<void> => {
   const parsed = CreateGuestBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid guest details" });
@@ -415,7 +415,7 @@ router.post("/admin/guests", requireAuth, async (req, res): Promise<void> => {
   await addAudit(req, "Guest created", String(guest.id));
 });
 
-router.post("/admin/guests/import", requireAuth, async (req, res): Promise<void> => {
+router.post("/admin/guests/import", requireAdmin, async (req, res): Promise<void> => {
   const parsed = ImportGuestsBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid CSV" });
@@ -452,7 +452,7 @@ router.post("/admin/guests/import", requireAuth, async (req, res): Promise<void>
   await addAudit(req, "Guest list imported", `${created.length} created`);
 });
 
-router.get("/admin/guests/:id", requireAuth, async (req, res): Promise<void> => {
+router.get("/admin/guests/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = GetGuestParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: "Invalid guest" });
@@ -466,7 +466,7 @@ router.get("/admin/guests/:id", requireAuth, async (req, res): Promise<void> => 
   res.json(GetGuestResponse.parse(result));
 });
 
-router.patch("/admin/guests/:id", requireAuth, async (req, res): Promise<void> => {
+router.patch("/admin/guests/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = UpdateGuestParams.safeParse(req.params);
   const body = UpdateGuestBody.safeParse(req.body);
   if (!params.success || !body.success) {
@@ -486,7 +486,7 @@ router.patch("/admin/guests/:id", requireAuth, async (req, res): Promise<void> =
   await addAudit(req, "Guest edited", String(guest.id));
 });
 
-router.delete("/admin/guests/:id", requireAuth, async (req, res): Promise<void> => {
+router.delete("/admin/guests/:id", requireAdmin, async (req, res): Promise<void> => {
   const params = DeleteGuestParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: "Invalid guest" });
@@ -518,15 +518,15 @@ async function updateInvitationStatus(req: Request, res: any, status: "disabled"
   await addAudit(req, status === "disabled" ? "Invitation disabled" : "Invitation enabled", String(guestId));
 }
 
-router.post("/admin/guests/:id/disable", requireAuth, async (req, res): Promise<void> => {
+router.post("/admin/guests/:id/disable", requireAdmin, async (req, res): Promise<void> => {
   await updateInvitationStatus(req, res, "disabled", DisableInvitationParams, DisableInvitationResponse);
 });
 
-router.post("/admin/guests/:id/enable", requireAuth, async (req, res): Promise<void> => {
+router.post("/admin/guests/:id/enable", requireAdmin, async (req, res): Promise<void> => {
   await updateInvitationStatus(req, res, "pending", EnableInvitationParams, EnableInvitationResponse);
 });
 
-router.post("/admin/guests/:id/regenerate", requireAuth, async (req, res): Promise<void> => {
+router.post("/admin/guests/:id/regenerate", requireAdmin, async (req, res): Promise<void> => {
   const params = RegenerateInvitationParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: "Invalid guest" });
@@ -544,7 +544,7 @@ router.post("/admin/guests/:id/regenerate", requireAuth, async (req, res): Promi
   await addAudit(req, "Invitation code regenerated", String(guest.id));
 });
 
-router.post("/admin/invitations/lookup", requireAuth, async (req, res): Promise<void> => {
+router.post("/admin/invitations/lookup", requireAdmin, async (req, res): Promise<void> => {
   const parsed = LookupInvitationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid invitation code" });
@@ -563,7 +563,7 @@ router.post("/admin/invitations/lookup", requireAuth, async (req, res): Promise<
   res.json(LookupInvitationResponse.parse({ result, invitation: await getAdminGuest(row.guest.id) }));
 });
 
-router.post("/admin/invitations/:id/admit", requireAuth, async (req, res): Promise<void> => {
+router.post("/admin/invitations/:id/admit", requireAdmin, async (req, res): Promise<void> => {
   const id = Number(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
   if (!Number.isInteger(id)) {
     res.status(400).json({ error: "Invalid invitation" });
@@ -592,7 +592,7 @@ router.post("/admin/invitations/:id/admit", requireAuth, async (req, res): Promi
   await addAudit(req, "Guest checked in", String(result.invitation.guestId));
 });
 
-router.get("/admin/check-ins", requireAuth, async (req, res): Promise<void> => {
+router.get("/admin/check-ins", requireAdmin, async (req, res): Promise<void> => {
   const parsed = ListCheckInsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid check-in filters" });
@@ -614,7 +614,7 @@ router.get("/admin/check-ins", requireAuth, async (req, res): Promise<void> => {
   }))));
 });
 
-router.get("/admin/audit", requireAuth, async (_req, res): Promise<void> => {
+router.get("/admin/audit", requireAdmin, async (_req, res): Promise<void> => {
   const rows = await db.select().from(auditLogsTable).orderBy(desc(auditLogsTable.createdAt)).limit(100);
   res.json(ListAuditLogResponse.parse(rows));
 });

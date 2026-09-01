@@ -10,7 +10,7 @@ import {
   ObjectNotFoundError,
   ObjectStorageService,
 } from '../lib/objectStorage';
-import { requireAuth } from '../middlewares/auth';
+import { requireAdmin } from '../middlewares/auth';
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -25,7 +25,7 @@ const objectStorageService = new ObjectStorageService();
  */
 router.post(
   '/storage/uploads/request-url',
-  requireAuth,
+  requireAdmin,
   async (req: Request, res: Response) => {
     const parsed = RequestUploadUrlBody.safeParse(req.body);
     if (!parsed.success) {
