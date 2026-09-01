@@ -1,0 +1,1155 @@
+# BUILD THIS ENTIRE WEBSITE — PA EMMANUEL AYODELE ABATAN MEMORIAL INVITATION
+
+Build a complete, working, mobile-first memorial/burial invitation web application.
+
+DO NOT only create a design/mockup.
+
+DO NOT stop after creating the homepage.
+
+DO NOT ask me to manually implement features.
+
+DO NOT create unnecessary features.
+
+DO NOT create guest email/password accounts.
+
+DO NOT require guests to sign up.
+
+Build and connect the frontend, backend, database, authentication, invitation system, RSVP system, and one-time check-in system.
+
+Complete the entire application and test the important flows before considering it finished.
+
+==================================================
+EVENT INFORMATION
+=================
+
+Deceased:
+
+PA EMMANUEL AYODELE ABATAN
+
+Waykeep:
+
+October 15
+
+Burial:
+
+October 16
+
+Burial Venue:
+
+RONNIE D’EVENTS
+
+Dress Code:
+
+PURPLE
+
+The year must be editable from the admin settings.
+
+Do NOT invent a different venue.
+
+Do NOT change the venue to a church.
+
+==================================================
+MAIN IDEA
+=========
+
+This website is a digital burial invitation system.
+
+Each invited person receives their OWN invitation.
+
+Example:
+
+Guest:
+Adewale Abatan
+
+Invitation code:
+ADEWALE-4821
+
+Another guest:
+
+Guest:
+Bola Abatan
+
+Invitation code:
+BOLA-7394
+
+Every guest must have a different invitation code.
+
+The invitation admits ONE PERSON by default.
+
+The guest does not need an account.
+
+The guest simply opens their invitation link and shows it at the burial.
+
+The usher uses a normal phone to check the invitation code.
+
+NO SPECIAL SCANNER IS REQUIRED.
+
+==================================================
+VERY IMPORTANT — AUTHENTICATION
+===============================
+
+There must be NO email/password login for ordinary guests.
+
+Guests must NOT:
+
+* create accounts
+* enter passwords
+* verify email
+* use OTP
+* sign up
+
+The ONLY people who need authentication are:
+
+1. Admin
+2. Authorized Usher
+
+The public memorial page must work without login.
+
+The personal guest invitation must work without login.
+
+Only /admin and /check-in require authentication.
+
+If the current project contains a guest email-login system, REMOVE IT.
+
+Do not create another guest authentication system.
+
+==================================================
+DESIGN
+======
+
+Create a premium memorial design.
+
+Main colors:
+
+Deep purple
+Black
+White / ivory
+Subtle gold
+
+Use elegant typography.
+
+The website should feel:
+
+* respectful
+* peaceful
+* premium
+* modern
+* emotional
+* clean
+
+Do NOT make it look like a party website.
+
+Use subtle animations only.
+
+Make it extremely good on mobile phones because most guests will open their invitations on phones.
+
+==================================================
+PUBLIC HOMEPAGE
+===============
+
+Route:
+
+/
+
+Display:
+
+IN LOVING MEMORY
+
+PA EMMANUEL AYODELE ABATAN
+
+"Forever remembered, forever loved."
+
+Include a large photo area.
+
+IMPORTANT:
+Do not generate a fake photograph of Pa Emmanuel.
+
+The admin must be able to upload the real photograph.
+
+Display:
+
+WAYKEEP
+October 15
+
+BURIAL
+October 16
+
+VENUE
+RONNIE D’EVENTS
+
+DRESS CODE
+PURPLE
+
+Buttons:
+
+VIEW DETAILS
+
+MY INVITATION
+
+==================================================
+MEMORIAL SECTIONS
+=================
+
+Create sections for:
+
+ABOUT HIS LIFE
+
+FAMILY TRIBUTE
+
+FUNERAL PROGRAMME
+
+VENUE
+
+IMPORTANT INFORMATION
+
+FAMILY MESSAGE
+
+Do NOT invent information about Pa Emmanuel.
+
+If a section has no information, either hide it or show a tasteful placeholder.
+
+The admin must be able to edit these sections.
+
+==================================================
+ADMIN SYSTEM
+============
+
+Create an admin dashboard.
+
+Route:
+
+/admin
+
+Admin authentication is required.
+
+The admin should be able to:
+
+* Add guests
+* Edit guests
+* Delete guests
+* Create invitations
+* Disable invitations
+* Enable invitations
+* Regenerate invitation codes
+* Copy invitation links
+* View RSVP
+* View check-in status
+* View check-in history
+* Edit event information
+* Upload memorial photo
+* Manage programme
+* View statistics
+
+==================================================
+ADMIN LOGIN
+===========
+
+Create ONE simple secure admin authentication system.
+
+Do not create guest accounts.
+
+Use secure password authentication.
+
+Do not hard-code admin passwords into frontend code.
+
+Do not expose passwords.
+
+The admin login should only be used for administration.
+
+==================================================
+GUEST DATABASE
+==============
+
+Create a database containing guests.
+
+Each guest should have:
+
+id
+full_name
+created_at
+updated_at
+
+Optional:
+
+phone
+email
+notes
+
+IMPORTANT:
+
+Phone and email are OPTIONAL.
+
+Do NOT require them.
+
+The website must work perfectly if only the guest's name is provided.
+
+==================================================
+INVITATION DATABASE
+===================
+
+Each invitation should contain:
+
+id
+guest_id
+event_id
+invitation_code
+secure_token
+admission_limit
+admitted_count
+status
+rsvp_status
+created_at
+updated_at
+
+Default:
+
+admission_limit = 1
+
+Status options:
+
+pending
+checked_in
+disabled
+
+RSVP options:
+
+pending
+attending
+not_attending
+
+==================================================
+INVITATION CODE
+===============
+
+When admin creates a guest, automatically generate a unique invitation code.
+
+Example:
+
+ADEWALE-4821
+
+BOLA-7394
+
+TUNDE-1836
+
+KEMI-6205
+
+Use:
+
+GUEST-NAME + RANDOM 4 DIGITS
+
+Sanitize the name.
+
+If the name is too long, shorten it appropriately.
+
+The random digits must be generated automatically.
+
+Do not allow duplicate invitation codes.
+
+Also generate a secure random internal token/UUID.
+
+The guest sees:
+
+ADEWALE-4821
+
+The internal secure token must not be displayed.
+
+==================================================
+PERSONAL INVITATION
+===================
+
+Each guest receives a private invitation link.
+
+Example:
+
+/invite/[secure-token]
+
+The guest opens it without logging in.
+
+Display:
+
+YOU ARE CORDIALLY INVITED
+
+IN LOVING MEMORY OF
+
+PA EMMANUEL AYODELE ABATAN
+
+INVITED GUEST
+
+ADEWALE ABATAN
+
+WAYKEEP
+October 15
+
+BURIAL
+October 16
+
+VENUE
+RONNIE D’EVENTS
+
+DRESS CODE
+PURPLE
+
+ADMISSION
+
+1 PERSON
+
+INVITATION CODE
+
+ADEWALE-4821
+
+Display:
+
+"THIS INVITATION ADMITS ONE PERSON ONLY."
+
+And:
+
+"Please present this invitation to the family/usher upon arrival."
+
+==================================================
+RSVP
+====
+
+Add:
+
+WILL YOU BE ATTENDING?
+
+Buttons:
+
+YES, I'LL BE THERE
+
+UNABLE TO ATTEND
+
+Save RSVP in the database.
+
+Important:
+
+RSVP is NOT admission.
+
+Someone selecting YES does not automatically become checked in.
+
+==================================================
+CHECK-IN SYSTEM
+===============
+
+Create:
+
+/check-in
+
+Only authorized admins/ushers can access this page.
+
+This is the main entrance system.
+
+The usher uses a normal smartphone.
+
+No scanner.
+
+No QR scanner.
+
+No special hardware.
+
+No OTP.
+
+No guest login.
+
+==================================================
+CHECK-IN FLOW
+=============
+
+The usher opens:
+
+/check-in
+
+Display:
+
+GUEST CHECK-IN
+
+Input:
+
+ENTER INVITATION CODE
+
+Button:
+
+CHECK INVITATION
+
+The usher enters:
+
+ADEWALE-4821
+
+If valid:
+
+✅ VALID INVITATION
+
+Guest:
+
+ADEWALE ABATAN
+
+Admission:
+
+1 PERSON
+
+Status:
+
+READY FOR ADMISSION
+
+Button:
+
+ADMIT GUEST
+
+When the usher presses ADMIT GUEST:
+
+Record:
+
+guest
+invitation
+time
+admin/usher
+
+Then change status to:
+
+CHECKED_IN
+
+Display:
+
+✅ GUEST ADMITTED
+
+ADEWALE ABATAN
+
+1 PERSON
+
+CHECKED IN AT:
+
+[time]
+
+Then clear the input so the usher can check the next guest.
+
+==================================================
+ONE-TIME ADMISSION
+==================
+
+THIS IS CRITICAL.
+
+An invitation can only be admitted once if its admission limit is 1.
+
+After:
+
+ADEWALE-4821
+
+has been admitted,
+
+another attempt must show:
+
+🔴 INVITATION ALREADY USED
+
+"This invitation has already been used for admission."
+
+Do not show an ADMIT button.
+
+Do not allow a second admission.
+
+==================================================
+SECURITY
+========
+
+Do not rely only on frontend JavaScript to determine whether an invitation is valid.
+
+Check invitation status using the backend/database.
+
+When admitting a guest, make the check-in operation atomic so two phones cannot successfully admit the same invitation at the same time.
+
+The operation should only succeed if:
+
+invitation exists
+AND
+invitation is not disabled
+AND
+admitted_count < admission_limit
+
+Then update the invitation immediately.
+
+Record the check-in.
+
+If another request happens after that, it must fail.
+
+==================================================
+INVALID INVITATION
+==================
+
+If the code does not exist:
+
+❌ INVALID INVITATION
+
+"This invitation code could not be found."
+
+Do not expose database information.
+
+==================================================
+DISABLED INVITATION
+===================
+
+If the invitation has been disabled:
+
+🚫 INVITATION DISABLED
+
+"This invitation is no longer valid."
+
+Do not allow admission.
+
+==================================================
+ADMIN DASHBOARD STATISTICS
+==========================
+
+Display:
+
+TOTAL GUESTS
+
+RSVP YES
+
+RSVP NO
+
+PENDING RSVP
+
+CHECKED IN
+
+NOT CHECKED IN
+
+DISABLED
+
+Example cards:
+
+TOTAL GUESTS
+250
+
+ATTENDING
+190
+
+CHECKED IN
+120
+
+NOT CHECKED IN
+70
+
+==================================================
+GUEST MANAGEMENT
+================
+
+Create an admin guest table.
+
+Columns:
+
+Guest Name
+Invitation Code
+RSVP
+Status
+Check-in Time
+Actions
+
+Actions:
+
+VIEW
+
+EDIT
+
+DISABLE
+
+ENABLE
+
+REGENERATE CODE
+
+COPY LINK
+
+DELETE
+
+==================================================
+ADD GUEST
+=========
+
+Admin clicks:
+
+* ADD GUEST
+
+Form:
+
+Full Name
+Phone (optional)
+Email (optional)
+Admission Limit
+Notes
+
+Default:
+
+Admission Limit = 1
+
+After saving:
+
+Create guest.
+
+Create invitation.
+
+Generate invitation code.
+
+Generate secure token.
+
+Display:
+
+INVITATION CREATED
+
+Guest:
+Adewale Abatan
+
+Code:
+ADEWALE-4821
+
+Button:
+
+COPY INVITATION LINK
+
+==================================================
+INVITATION LINK
+===============
+
+Every guest must have a unique invitation link.
+
+Use:
+
+/invite/[secure-token]
+
+Do not put private information in the URL.
+
+The admin should have:
+
+COPY INVITATION LINK
+
+button.
+
+==================================================
+WHATSAPP SHARING
+================
+
+Add:
+
+SHARE ON WHATSAPP
+
+and:
+
+COPY MESSAGE
+
+Do not automatically send messages.
+
+The admin chooses when to send/share the invitation.
+
+The generated message should contain the guest's invitation link.
+
+==================================================
+PROGRAMME
+=========
+
+Create programme management.
+
+Admin can add:
+
+Event
+Date
+Time
+Location
+Description
+
+Initial entries:
+
+WAYKEEP
+October 15
+
+BURIAL
+October 16
+
+Do NOT invent times.
+
+==================================================
+EVENT SETTINGS
+==============
+
+Create:
+
+/admin/event
+
+Admin can edit:
+
+Pa Emmanuel Ayodele Abatan
+Event title
+Year
+Waykeep date
+Burial date
+Venue
+Dress code
+Biography
+Tribute
+Family message
+Map link
+Photo
+
+Default:
+
+Name:
+Pa Emmanuel Ayodele Abatan
+
+Waykeep:
+October 15
+
+Burial:
+October 16
+
+Venue:
+Ronnie D’Events
+
+Dress Code:
+Purple
+
+==================================================
+VENUE
+=====
+
+Display:
+
+RONNIE D’EVENTS
+
+Add:
+
+GET DIRECTIONS
+
+The admin must be able to enter the correct Google Maps link.
+
+Do NOT invent coordinates or a map location.
+
+==================================================
+PHOTO
+=====
+
+Allow admin to upload:
+
+Pa Emmanuel's real photograph.
+
+Do not generate a fake photograph.
+
+Allow:
+
+UPLOAD PHOTO
+
+REPLACE PHOTO
+
+REMOVE PHOTO
+
+==================================================
+CHECK-IN HISTORY
+================
+
+Create:
+
+/admin/check-ins
+
+Show:
+
+Guest
+Invitation Code
+Check-in Time
+Checked-in By
+
+Add search.
+
+Add filters:
+
+ALL
+CHECKED IN
+NOT CHECKED IN
+DISABLED
+
+==================================================
+MOBILE DESIGN
+=============
+
+The check-in page must be extremely easy to use on a phone.
+
+Large:
+
+input
+
+button
+
+result card
+
+ADMIT GUEST button
+
+The usher should be able to complete a check-in in a few seconds.
+
+==================================================
+NO UNNECESSARY FEATURES
+=======================
+
+Do NOT add:
+
+Guest email accounts
+Guest passwords
+Guest registration
+OTP
+QR scanning requirements
+Complex social login
+Payment systems
+Subscriptions
+Chat
+Comments
+Public guest list
+
+Keep the system focused.
+
+==================================================
+PUBLIC PRIVACY
+==============
+
+Normal visitors must NOT be able to see:
+
+Guest list
+Phone numbers
+Emails
+Invitation database
+Check-in records
+Admin information
+
+Only the specific invited guest should see their own invitation through their secure invitation link.
+
+==================================================
+ERROR HANDLING
+==============
+
+Handle:
+
+Invalid invitation
+
+Used invitation
+
+Disabled invitation
+
+Network failure
+
+Database failure
+
+Unauthorized admin
+
+Duplicate code
+
+Missing guest
+
+Expired/invalid token
+
+Show simple human-readable messages.
+
+Never show raw database errors to guests.
+
+==================================================
+REQUIRED TESTING
+================
+
+Before declaring the project finished, test all of these:
+
+TEST 1
+
+Create:
+
+TEST GUEST ONE
+
+Verify invitation is generated.
+
+TEST 2
+
+Open the invitation link.
+
+Verify:
+
+Guest name
+Invitation code
+Event information
+Venue
+Dates
+Dress code
+1-person admission
+
+TEST 3
+
+RSVP YES.
+
+Verify admin sees YES.
+
+TEST 4
+
+Enter invitation code in check-in.
+
+Verify:
+
+VALID INVITATION
+
+TEST 5
+
+Click:
+
+ADMIT GUEST
+
+Verify:
+
+CHECKED IN
+
+TEST 6
+
+Enter the same code again.
+
+Verify:
+
+INVITATION ALREADY USED
+
+Verify that another admission is impossible.
+
+TEST 7
+
+Enter a random code.
+
+Verify:
+
+INVALID INVITATION
+
+TEST 8
+
+Disable an invitation.
+
+Try checking it in.
+
+Verify:
+
+INVITATION DISABLED
+
+TEST 9
+
+Create two different guests.
+
+Verify their invitation codes are different.
+
+TEST 10
+
+Open admin page without authentication.
+
+Verify access is blocked.
+
+TEST 11
+
+Open check-in page without authentication.
+
+Verify access is blocked.
+
+==================================================
+FINAL REQUIREMENT
+=================
+
+DO NOT STOP AFTER CREATING THE FRONTEND.
+
+DO NOT STOP AFTER CREATING THE DATABASE.
+
+DO NOT STOP AFTER CREATING AUTHENTICATION.
+
+DO NOT STOP AFTER CREATING THE INVITATION PAGE.
+
+CONNECT EVERYTHING.
+
+TEST EVERYTHING.
+
+FIX ERRORS.
+
+The final working flow must be:
+
+ADMIN
+
+Login
+
+↓
+
+Add guest
+
+↓
+
+Website generates invitation
+
+↓
+
+Copy invitation link
+
+↓
+
+Send guest the link
+
+GUEST
+
+Open link
+
+↓
+
+See personal invitation
+
+↓
+
+See name
+
+↓
+
+See unique invitation code
+
+↓
+
+Come to burial
+
+USHER
+
+Open check-in
+
+↓
+
+Enter code
+
+↓
+
+See guest name
+
+↓
+
+Confirm guest's identity
+
+↓
+
+Press ADMIT GUEST
+
+↓
+
+Invitation becomes CHECKED IN
+
+↓
+
+Same invitation cannot be admitted again.
+
+==================================================
+FINAL EVENT DETAILS — DO NOT CHANGE
+===================================
+
+PA EMMANUEL AYODELE ABATAN
+
+WAYKEEP:
+October 15
+
+BURIAL:
+October 16
+
+VENUE:
+RONNIE D’EVENTS
+
+DRESS CODE:
+PURPLE
+
+Build the complete application now.
+
+Do not give me a plan and stop.
+
+Do not ask me to finish the remaining features.
+
+Actually implement the features, connect the database, test the flows, and fix any errors before declaring the project complete.

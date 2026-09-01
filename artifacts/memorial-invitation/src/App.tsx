@@ -299,7 +299,7 @@ function AuthPage({ mode }: { mode: 'in' | 'up' }) {
 
 function Router() {
   const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/invite/:token" component={InvitePage} /><Route path="/check-in" component={() => <Protected><CheckInPage /></Protected>} /><Route path="/admin" component={() => <Protected><AdminPage /></Protected>} /><Route path="/admin/settings" component={() => <Protected><SettingsPage /></Protected>} /><Route path="/sign-in/*?" component={() => <AuthPage mode="in" />} /><Route path="/sign-up/*?" component={() => <AuthPage mode="up" />} /><Route component={NotFound} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/invite/:token" component={InvitePage} /><Route path="/check-in" component={() => <Protected><CheckInPage /></Protected>} /><Route path="/admin" component={() => <Protected><AdminPage /></Protected>} /><Route path="/admin/settings" component={() => <Protected><SettingsPage /></Protected>} /><Route path="/admin/event" component={() => <Protected><SettingsPage /></Protected>} /><Route path="/sign-in/*?" component={() => <AuthPage mode="in" />} /><Route path="/sign-up/*?" component={() => <AuthPage mode="up" />} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
 function App() {

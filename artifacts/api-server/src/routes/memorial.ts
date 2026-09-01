@@ -63,7 +63,7 @@ const DEFAULT_EVENT = {
   waykeepDate: "2026-10-15",
   burialDate: "2026-10-16",
   year: 2026,
-  venue: "CGCC Citadel Global Community Church",
+  venue: "RONNIE D’EVENTS",
   dressCode: "Purple",
 };
 
