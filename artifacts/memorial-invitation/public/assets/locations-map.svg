@@ -1,0 +1,22 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Waykeep and burial location map</title>
+  <desc id="desc">An illustrated route between the Waykeep and Burial venues.</desc>
+  <rect width="1200" height="720" rx="40" fill="#E7DCC8"/>
+  <path d="M-40 160C140 90 228 228 410 158C584 91 672 48 828 122C1000 204 1036 92 1240 148" stroke="#D3C5AD" stroke-width="64" stroke-linecap="round"/>
+  <path d="M-50 470C104 394 210 536 364 458C542 368 624 502 772 432C940 352 1042 500 1248 408" stroke="#D3C5AD" stroke-width="52" stroke-linecap="round"/>
+  <path d="M160 690C246 554 198 454 328 354C448 262 492 304 584 214C674 126 772 178 890 254C1000 326 1040 270 1232 238" stroke="#F7F2E8" stroke-width="24" stroke-linecap="round"/>
+  <path d="M160 690C246 554 198 454 328 354C448 262 492 304 584 214C674 126 772 178 890 254C1000 326 1040 270 1232 238" stroke="#B89C78" stroke-width="4" stroke-dasharray="14 16" stroke-linecap="round"/>
+  <path d="M328 354C428 388 496 344 584 214" stroke="#8D5E4D" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="328" cy="354" r="28" fill="#8D5E4D"/>
+  <circle cx="584" cy="214" r="28" fill="#8D5E4D"/>
+  <circle cx="328" cy="354" r="10" fill="#F7F2E8"/>
+  <circle cx="584" cy="214" r="10" fill="#F7F2E8"/>
+  <rect x="84" y="92" width="288" height="92" rx="24" fill="#F7F2E8" fill-opacity=".92"/>
+  <text x="116" y="128" fill="#8D5E4D" font-family="monospace" font-size="16" letter-spacing="2">WAYKEEP</text>
+  <text x="116" y="159" fill="#252A3A" font-family="Georgia, serif" font-size="25">CGCC</text>
+  <rect x="684" y="66" width="384" height="116" rx="24" fill="#F7F2E8" fill-opacity=".92"/>
+  <text x="716" y="104" fill="#8D5E4D" font-family="monospace" font-size="16" letter-spacing="2">BURIAL</text>
+  <text x="716" y="140" fill="#252A3A" font-family="Georgia, serif" font-size="25">Ronnie D’Events</text>
+  <text x="84" y="638" fill="#8D5E4D" font-family="monospace" font-size="15" letter-spacing="2">OPEN DIRECTIONS IN GOOGLE MAPS</text>
+  <text x="84" y="672" fill="#252A3A" font-family="Georgia, serif" font-size="24">Two gatherings · one shared remembrance</text>
+</svg>
