@@ -149,6 +149,26 @@ paths:
                 $ref: "#/components/schemas/PublicInvitation"
         "404":
           $ref: "#/components/responses/NotFound"
+  /public/invitations/code/{code}:
+    get:
+      operationId: lookupPublicInvitation
+      tags: [invitations]
+      summary: Find a public invitation by friendly code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invitation token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicInvitationLookup"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /public/invitations/{token}/rsvp:
     post:
       operationId: submitRsvp
@@ -386,6 +406,12 @@ paths:
       summary: Atomically admit an invitation once
       parameters:
         - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdmissionInput"
       responses:
         "200":
           description: Admission result
@@ -468,7 +494,7 @@ components:
         - status
     Event:
       type: object
-      required: [id, deceasedName, eventTitle, waykeepDate, burialDate, venue, dressCode]
+      required: [id, deceasedName, eventTitle, waykeepDate, burialDate, venue, waykeepVenue, burialVenue, dressCode]
       properties:
         id: { type: number }
         deceasedName: { type: string }
@@ -477,6 +503,8 @@ components:
         burialDate: { type: string }
         year: { type: ["number", "null"] }
         venue: { type: string }
+        waykeepVenue: { type: string }
+        burialVenue: { type: string }
         dressCode: { type: string }
         biography: { type: ["string", "null"] }
         tribute: { type: ["string", "null"] }
@@ -486,6 +514,7 @@ components:
         mapUrl: { type: ["string", "null"] }
         photoUrl: { type: ["string", "null"] }
         backgroundImageUrl: { type: ["string", "null"] }
+        asoEbiInformation: { type: ["string", "null"] }
     EventUpdate:
       type: object
       properties:
@@ -495,6 +524,8 @@ components:
         burialDate: { type: string }
         year: { type: ["number", "null"] }
         venue: { type: string }
+        waykeepVenue: { type: string }
+        burialVenue: { type: string }
         dressCode: { type: string }
         biography: { type: ["string", "null"] }
         tribute: { type: ["string", "null"] }
@@ -504,6 +535,7 @@ components:
         mapUrl: { type: ["string", "null"] }
         photoUrl: { type: ["string", "null"] }
         backgroundImageUrl: { type: ["string", "null"] }
+        asoEbiInformation: { type: ["string", "null"] }
     ProgrammeItem:
       type: object
       required: [id, title, date, sortOrder]
@@ -536,11 +568,12 @@ components:
         sortOrder: { type: number }
     PublicInvitation:
       type: object
-      required: [guestName, invitationCode, admissionLimit, status, rsvpStatus, event, programme]
+      required: [guestName, invitationCode, admissionLimit, admittedCount, status, rsvpStatus, event, programme]
       properties:
         guestName: { type: string }
         invitationCode: { type: string }
         admissionLimit: { type: number }
+        admittedCount: { type: number }
         status:
           type: string
           enum: [pending, confirmed, checked_in, disabled]
@@ -554,6 +587,11 @@ components:
           items:
             $ref: "#/components/schemas/ProgrammeItem"
         checkedInAt: { type: ["string", "null"], format: date-time }
+    PublicInvitationLookup:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
     RsvpInput:
       type: object
       required: [response]
@@ -580,7 +618,7 @@ components:
         admissionLimit: { type: number, minimum: 1 }
     AdminGuest:
       type: object
-      required: [id, invitationId, fullName, invitationCode, invitationToken, admissionLimit, status, rsvpStatus, createdAt]
+      required: [id, invitationId, fullName, invitationCode, invitationToken, admissionLimit, admittedCount, status, rsvpStatus, createdAt]
       properties:
         id: { type: number }
         invitationId: { type: number }
@@ -591,6 +629,7 @@ components:
         invitationCode: { type: string }
         invitationToken: { type: string }
         admissionLimit: { type: number }
+        admittedCount: { type: number }
         status:
           type: string
           enum: [pending, confirmed, checked_in, disabled]
@@ -607,13 +646,21 @@ components:
         csv: { type: string, minLength: 1 }
     GuestImportResult:
       type: object
-      required: [created, errors]
+      required: [created, errors, duplicates]
       properties:
         created:
           type: array
           items:
             $ref: "#/components/schemas/AdminGuest"
         errors:
+          type: array
+          items:
+            type: object
+            required: [row, message]
+            properties:
+              row: { type: number }
+              message: { type: string }
+        duplicates:
           type: array
           items:
             type: object
@@ -643,12 +690,16 @@ components:
       properties:
         result:
           type: string
-          enum: [admitted, used, disabled, not_found]
+          enum: [admitted, used, disabled, not_found, limit_exceeded]
         invitation:
           anyOf:
             - $ref: "#/components/schemas/AdminGuest"
             - type: "null"
         checkedInAt: { type: ["string", "null"], format: date-time }
+    AdmissionInput:
+      type: object
+      properties:
+        numberAdmitted: { type: number, minimum: 1, default: 1 }
     DashboardSummary:
       type: object
       required: [totalInvited, confirmed, pending, checkedIn, notCheckedIn, disabled, rsvpYes, rsvpNo]
@@ -674,6 +725,7 @@ components:
         invitationCode: { type: string }
         checkedInAt: { type: string, format: date-time }
         checkedInBy: { type: string }
+        numberAdmitted: { type: number }
     AuditRecord:
       type: object
       required: [id, action, actor, createdAt]

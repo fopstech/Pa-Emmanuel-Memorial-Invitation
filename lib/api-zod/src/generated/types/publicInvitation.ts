@@ -14,6 +14,7 @@ export interface PublicInvitation {
   guestName: string;
   invitationCode: string;
   admissionLimit: number;
+  admittedCount: number;
   status: PublicInvitationStatus;
   rsvpStatus: PublicInvitationRsvpStatus;
   event: Event;

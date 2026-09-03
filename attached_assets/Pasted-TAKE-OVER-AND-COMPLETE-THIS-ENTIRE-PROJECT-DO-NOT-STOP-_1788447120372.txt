@@ -1,0 +1,1626 @@
+TAKE OVER AND COMPLETE THIS ENTIRE PROJECT — DO NOT STOP PARTWAY
+
+You are taking over an existing partially built memorial invitation website that was previously being developed with Lovable.
+
+Your job is to inspect the existing codebase, preserve anything that already works, fix anything broken, and COMPLETE the entire application.
+
+IMPORTANT:
+
+DO NOT START A COMPLETELY DIFFERENT PROJECT.
+
+DO NOT THROW AWAY WORKING FEATURES.
+
+DO NOT STOP AFTER FIXING A BUILD ERROR.
+
+DO NOT JUST GIVE ME INSTRUCTIONS.
+
+DO NOT LEAVE PLACEHOLDER PAGES.
+
+DO NOT CREATE FAKE BUTTONS THAT DO NOTHING.
+
+IMPLEMENT THE ACTUAL FUNCTIONALITY.
+
+If something is already implemented correctly, keep it.
+
+If something is broken, fix it.
+
+If something is missing, build it.
+
+After fixing one problem, CONTINUE to the next requirement.
+
+Continue through implementation, database setup, authentication, UI, security, testing, and final bug fixing.
+
+==================================================
+1. PROJECT
+==================================================
+
+This is a digital memorial and burial invitation website for:
+
+PA EMMANUEL AYODELE ABATAN
+
+The website needs:
+
+1. Public memorial page
+2. Individual guest invitations
+3. Guest RSVP
+4. Admin dashboard
+5. Guest management
+6. Spreadsheet/CSV guest import
+7. Invitation-code generation
+8. Personal invitation links
+9. Usher check-in
+10. One-person admission enforcement
+11. Event settings
+12. Programme editor
+13. Check-in history
+14. Audit log
+15. Aso-Ebi information section
+
+==================================================
+2. CRITICAL AUTHENTICATION RULE
+==================================================
+
+GUESTS MUST NOT HAVE LOGIN.
+
+REMOVE GUEST EMAIL LOGIN COMPLETELY.
+
+Guests MUST NOT need:
+
+- Email login
+- Email/password
+- Guest signup
+- Guest account
+- Password
+- OTP
+- Magic-link authentication
+- Google login
+- Any guest authentication
+
+A guest simply receives their personal invitation URL and opens it.
+
+Example:
+
+/invite/<secure-token>
+
+Opening this URL should immediately show that guest's invitation.
+
+NO LOGIN SCREEN.
+
+NO SIGNUP SCREEN.
+
+NO EMAIL VERIFICATION.
+
+NO PASSWORD.
+
+NO OTP.
+
+EMAIL IS NOT AUTHENTICATION.
+
+Email may exist as an OPTIONAL field inside the ADMIN guest database for contact information, but it must never be required for guests and must never be used as authentication.
+
+==================================================
+3. ONLY ADMIN AND USHERS LOGIN
+==================================================
+
+ONLY these roles require authentication:
+
+ADMIN
+
+and
+
+USHER
+
+Admin:
+
+/admin
+
+Usher:
+
+/check-in
+
+Protect both routes properly.
+
+Unauthenticated users must not be able to access the admin dashboard or check-in functionality.
+
+Guests must never be redirected to a login page.
+
+==================================================
+4. EVENT INFORMATION
+==================================================
+
+Initial event information:
+
+Deceased:
+
+Pa Emmanuel Ayodele Abatan
+
+WAYKEEP:
+
+October 15
+
+Venue:
+
+Citadel Global Community Church (CGCC)
+
+BURIAL:
+
+October 16
+
+Venue:
+
+Ronnie D’Events
+
+DRESS CODE:
+
+Purple
+
+IMPORTANT:
+
+Do NOT invent a year for October 15 or October 16.
+
+Make the dates editable from Admin → Event Settings.
+
+The correct locations are:
+
+WAYKEEP = Citadel Global Community Church (CGCC)
+
+BURIAL = Ronnie D’Events
+
+DO NOT switch these.
+
+==================================================
+5. DESIGN
+==================================================
+
+Create a premium, respectful memorial design.
+
+Color direction:
+
+- Deep purple
+- Black
+- Ivory/cream
+- Subtle gold
+
+Typography:
+
+Cormorant or similar elegant serif for:
+
+- Deceased's name
+- Main headings
+
+Karla or similar clean sans-serif for:
+
+- Body
+- Buttons
+- Forms
+- Dashboard UI
+
+The site must feel:
+
+- Elegant
+- Respectful
+- Premium
+- Family-oriented
+- Memorial appropriate
+
+Avoid:
+
+- Cartoon-like design
+- Excessive animations
+- Bright random colors
+- Generic AI SaaS appearance
+- Huge unnecessary gradients
+
+Mobile-first design is extremely important.
+
+Guests and ushers will primarily use phones.
+
+==================================================
+6. PUBLIC MEMORIAL PAGE
+==================================================
+
+Build/finalize the public homepage.
+
+It should include:
+
+Pa Emmanuel Ayodele Abatan
+
+A respectful memorial introduction.
+
+Event information:
+
+WAYKEEP
+October 15
+Citadel Global Community Church (CGCC)
+
+BURIAL
+October 16
+Ronnie D’Events
+
+DRESS CODE
+Purple
+
+Programme section.
+
+Aso-Ebi section.
+
+A clear way for invited guests to access their invitation.
+
+The public page MUST NOT expose the entire guest database.
+
+==================================================
+7. GUEST INVITATION SYSTEM
+==================================================
+
+Every guest receives a unique invitation.
+
+Example friendly invitation code:
+
+ADEWALE-4821
+
+The system must generate TWO identifiers:
+
+1. Friendly invitation code
+2. Secure random invitation token
+
+Example:
+
+Friendly code:
+ADEWALE-4821
+
+Secure token:
+cryptographically secure random token
+
+The secure token is used for the personal invitation URL:
+
+/invite/<secure-token>
+
+Do NOT use:
+
+- Sequential IDs
+- Guest name alone
+- Predictable tokens
+
+Invitation codes must be unique.
+
+Secure tokens must be unique.
+
+==================================================
+8. DEFAULT ADMISSION
+==================================================
+
+Every invitation defaults to:
+
+1 PERSON
+
+Store an admission limit.
+
+Example:
+
+admission_limit = 1
+
+Admin may change the limit for a specific guest if necessary.
+
+But all newly created/imported guests should default to:
+
+1
+
+==================================================
+9. GUEST DATABASE
+==================================================
+
+Use the existing database if the project already has one.
+
+If Supabase is already configured, continue using Supabase.
+
+Do not introduce unnecessary database systems.
+
+Guest information should support:
+
+- id
+- full_name
+- email (OPTIONAL)
+- phone (OPTIONAL)
+- invitation_code
+- secure_token
+- admission_limit
+- RSVP status
+- invitation status
+- check-in status
+- checked-in timestamp
+- created_at
+- updated_at
+
+Use appropriate database constraints.
+
+Invitation codes must be unique.
+
+Secure tokens must be unique.
+
+==================================================
+10. ADMIN DASHBOARD
+==================================================
+
+Build a REAL admin dashboard.
+
+Route:
+
+/admin
+
+It must not be a placeholder.
+
+Dashboard overview cards:
+
+- Total Guests
+- Total Invitations
+- RSVP Attending
+- RSVP Pending
+- RSVP Declined
+- Checked In
+- Not Checked In
+
+Navigation:
+
+Dashboard
+Guests
+Invitations
+Check-In
+Event Settings
+Programme
+Check-In History
+Audit Log
+
+Navigation must actually work.
+
+==================================================
+11. ADMIN GUEST MANAGEMENT
+==================================================
+
+Admin must be able to:
+
+CREATE GUEST
+
+Fields:
+
+Full Name
+Email optional
+Phone optional
+Admission Limit
+
+Default:
+
+1
+
+When creating a guest:
+
+Automatically generate:
+
+- invitation code
+- secure token
+- invitation URL
+
+EDIT GUEST
+
+Admin can edit guest information.
+
+DELETE GUEST
+
+Require confirmation.
+
+SEARCH GUESTS
+
+Search by:
+
+- Full name
+- Invitation code
+- Phone
+
+FILTER:
+
+- All
+- RSVP Pending
+- RSVP Attending
+- RSVP Declined
+- Checked In
+- Not Checked In
+
+==================================================
+12. INVITATION CODE
+==================================================
+
+Generate codes such as:
+
+ADEWALE-4821
+
+Requirements:
+
+- Readable
+- Unique
+- Name-based prefix
+- Random digits
+- Not sequential
+- Automatically generated
+
+Admin should see the code in the guest management table.
+
+Provide:
+
+COPY INVITATION CODE
+
+button.
+
+==================================================
+13. PERSONAL INVITATION LINK
+==================================================
+
+Every guest must have a unique invitation URL.
+
+Example:
+
+/invite/<secure-token>
+
+Admin must have:
+
+VIEW INVITATION
+
+and
+
+COPY INVITATION LINK
+
+buttons.
+
+The copy button must actually copy the link.
+
+The guest opens the link directly.
+
+NO LOGIN.
+
+==================================================
+14. PERSONAL INVITATION PAGE
+==================================================
+
+The invitation page should display:
+
+YOU ARE WARMLY INVITED
+
+Guest's name
+
+In memory of:
+
+PA EMMANUEL AYODELE ABATAN
+
+Event details:
+
+WAYKEEP
+October 15
+Citadel Global Community Church (CGCC)
+
+BURIAL
+October 16
+Ronnie D’Events
+
+DRESS CODE
+Purple
+
+Admission:
+
+1 PERSON
+
+or the guest's configured admission limit.
+
+Include RSVP.
+
+==================================================
+15. RSVP
+==================================================
+
+Guests can RSVP directly from their invitation.
+
+NO LOGIN.
+
+Buttons:
+
+I WILL ATTEND
+
+and
+
+UNABLE TO ATTEND
+
+Save RSVP status to the database.
+
+Possible states:
+
+Pending
+Attending
+Declined
+
+After submission show confirmation.
+
+Example:
+
+Thank you. Your RSVP has been recorded.
+
+Admin must be able to see RSVP status.
+
+==================================================
+16. "MY INVITATION" LOOKUP
+==================================================
+
+If there is a MY INVITATION button on the public website, make it work.
+
+Guest enters:
+
+ADEWALE-4821
+
+System validates the code.
+
+If valid:
+
+Open the correct invitation.
+
+If invalid:
+
+Show:
+
+Invitation not found. Please check your invitation code.
+
+Do NOT expose the entire guest database.
+
+==================================================
+17. USHER CHECK-IN
+==================================================
+
+Route:
+
+/check-in
+
+This is for authenticated ushers.
+
+NO QR SCANNER REQUIRED.
+
+NO SPECIAL HARDWARE.
+
+The usher uses a normal phone.
+
+Flow:
+
+STEP 1:
+
+Guest Check-In
+
+Enter Invitation Code
+
+Example:
+
+ADEWALE-4821
+
+Button:
+
+LOOK UP INVITATION
+
+STEP 2:
+
+If valid:
+
+INVITATION FOUND
+
+Guest:
+Adewale Example
+
+Admission:
+1 person
+
+Status:
+Not checked in
+
+Button:
+
+ADMIT GUEST
+
+STEP 3:
+
+After clicking ADMIT GUEST:
+
+Perform a REAL server/database check.
+
+If still unused:
+
+Create check-in record.
+
+Mark invitation as used/checked in.
+
+Record:
+
+- Guest
+- Invitation
+- Timestamp
+- Usher/admin who checked them in
+- Number admitted
+
+Show:
+
+GUEST ADMITTED SUCCESSFULLY
+
+==================================================
+18. ALREADY USED INVITATION
+==================================================
+
+If the same code is entered again:
+
+DO NOT admit them again.
+
+Show:
+
+INVITATION ALREADY USED
+
+Guest name
+
+Check-in time
+
+The ADMIT GUEST button must be disabled/unavailable.
+
+This rule MUST be enforced server-side/database-side.
+
+Do not rely only on frontend state.
+
+==================================================
+19. DOUBLE CHECK-IN PROTECTION
+==================================================
+
+This is extremely important.
+
+Two ushers could potentially attempt to check in the same guest at the same time.
+
+The backend/database operation must safely prevent double admission.
+
+Use an atomic operation, transaction, conditional update, or equivalent supported by the database.
+
+The system must guarantee:
+
+ONE INVITATION = ONE ADMISSION
+
+unless the configured admission limit allows more.
+
+Do not implement this only in React/frontend JavaScript.
+
+==================================================
+20. CSV IMPORT
+==================================================
+
+Admin must be able to import a guest spreadsheet/CSV.
+
+Support columns:
+
+full_name
+email
+phone
+admission_limit
+
+Example:
+
+Full Name,Email,Phone,Admission Limit
+
+Adewale Abatan,adewale@example.com,08012345678,1
+
+Tolu Abatan,tolu@example.com,08023456789,1
+
+Moyin Abatan,moyin@example.com,08034567890,1
+
+For each imported guest:
+
+- Create guest
+- Generate unique invitation code
+- Generate secure token
+- Default admission limit to 1 if blank
+- RSVP = pending
+- Check-in = unused
+- Generate personal invitation URL
+
+Show import results:
+
+Successfully imported
+Failed
+Duplicate
+Invalid rows
+
+Do not silently discard data.
+
+==================================================
+21. PASTE SPREADSHEET FEATURE
+==================================================
+
+Also create:
+
+PASTE GUEST LIST
+
+Admin can copy directly from:
+
+- Microsoft Excel
+- Google Sheets
+- LibreOffice Calc
+
+and paste into a large textarea.
+
+Support tab-separated values.
+
+Example:
+
+Full Name    Email    Phone    Admission Limit
+John Abatan    john@email.com    08011111111    1
+Mary Abatan    mary@email.com    08022222222    1
+David Abatan    david@email.com    08033333333    1
+
+Detect columns automatically where possible.
+
+Show a preview before importing.
+
+Example:
+
+3 guests ready to import.
+
+Button:
+
+IMPORT GUESTS
+
+After import show:
+
+Successfully imported: 3
+
+Failed: 0
+
+Duplicates: 0
+
+==================================================
+22. ADMIN GUEST TABLE
+==================================================
+
+Display:
+
+Guest
+Email
+Phone
+Invitation Code
+RSVP
+Check-In
+
+Actions:
+
+View Invitation
+Copy Link
+Copy Code
+Edit
+Delete
+
+Make the table responsive.
+
+On phones, use cards or a mobile-friendly layout instead of forcing a huge table.
+
+==================================================
+23. INVITATION MANAGEMENT
+==================================================
+
+Admin should be able to see:
+
+Guest
+Invitation code
+RSVP
+Admission limit
+Check-in status
+Created date
+
+Actions:
+
+View invitation
+Copy invitation link
+Copy invitation code
+
+==================================================
+24. EVENT SETTINGS
+==================================================
+
+Build a REAL Event Settings page.
+
+Admin can edit:
+
+Deceased Name
+
+Waykeep Date
+
+Waykeep Venue
+
+Burial Date
+
+Burial Venue
+
+Dress Code
+
+Memorial Description
+
+Aso-Ebi information
+
+Initial values:
+
+Deceased:
+Pa Emmanuel Ayodele Abatan
+
+Waykeep:
+October 15
+
+Waykeep Venue:
+Citadel Global Community Church (CGCC)
+
+Burial:
+October 16
+
+Burial Venue:
+Ronnie D’Events
+
+Dress Code:
+Purple
+
+DO NOT hard-code these values throughout the application.
+
+Store them properly so the admin can change them.
+
+==================================================
+25. ASO-EBI SECTION
+==================================================
+
+Add a dedicated Aso-Ebi section to the public memorial/invitation website.
+
+Use the uploaded Aso-Ebi design/image provided with this project as the visual reference/image.
+
+If the uploaded image is available in the project, display the actual supplied image.
+
+Do NOT replace it with a generated random image.
+
+Do NOT modify the information contained in the supplied image.
+
+Make it responsive.
+
+Important information:
+
+ASO-EBI
+
+6 YARDS ONLY
+
+₦10,000
+
+Sales end:
+
+30th September, 2026
+
+PAYMENT INFORMATION
+
+Opay Account
+
+Account Number:
+
+8144963974
+
+Account Name:
+
+Kasali Olawunmi
+
+NARRATION FOR PAYMENT:
+
+Daddy Abatan
+
+SEND NOTIFICATIONS OF PAYMENT TO:
+
+08027189122
+
+Display the Aso-Ebi information elegantly.
+
+Use:
+
+Deep purple
+Ivory
+Gold accents
+
+Do not make it look like a normal ecommerce store.
+
+==================================================
+26. PROGRAMME EDITOR
+==================================================
+
+Admin can:
+
+Add programme item
+Edit programme item
+Delete programme item
+Reorder programme items
+
+Fields:
+
+Date
+Time
+Title
+Location
+Description
+
+Public memorial page displays the saved programme.
+
+==================================================
+27. CHECK-IN HISTORY
+==================================================
+
+Build:
+
+/admin/check-ins
+
+Show:
+
+Guest
+Invitation Code
+Check-in Time
+Checked In By
+Number Admitted
+
+Search/filter functionality.
+
+Only authorized admin/usher users can access appropriate information.
+
+Do not expose check-in history publicly.
+
+==================================================
+28. AUDIT LOG
+==================================================
+
+Build audit trail.
+
+Track important actions:
+
+Guest created
+Guest edited
+Guest deleted
+Invitation generated
+RSVP updated
+Guest checked in
+Event settings changed
+Programme item created/edited/deleted
+
+Store:
+
+Action
+User
+Target
+Timestamp
+
+Only authorized admin users should access the audit log.
+
+==================================================
+29. SECURITY
+==================================================
+
+Implement proper security.
+
+NEVER expose:
+
+- Database service keys
+- Admin credentials
+- Secret environment variables
+- Full guest database publicly
+
+Protect admin routes.
+
+Protect usher routes.
+
+Validate invitation codes server-side.
+
+Use cryptographically secure invitation tokens.
+
+Do not use predictable tokens.
+
+Enforce one-time check-in server-side.
+
+If using Supabase:
+
+Configure appropriate Row Level Security policies.
+
+Guests should only be able to access their invitation using their secure token.
+
+Do not expose arbitrary guest records.
+
+==================================================
+30. ROOT / ROUTING
+==================================================
+
+Inspect the existing routing system.
+
+The previous builder reported an issue involving:
+
+src/routes/_authenticated/route.tsx
+
+and the authenticated pathless layout.
+
+Inspect the actual framework and route structure.
+
+Fix it correctly.
+
+Do not just suppress the error.
+
+Ensure authenticated routes have valid child routes.
+
+Expected conceptual routes:
+
+/
+
+ /invite/:secureToken
+
+ /admin
+
+ /admin/guests
+
+ /admin/invitations
+
+ /admin/event
+
+ /admin/programme
+
+ /admin/check-ins
+
+ /admin/audit
+
+ /check-in
+
+Adapt these to the actual framework/router being used.
+
+Do not create conflicting routing systems.
+
+==================================================
+31. TOASTS
+==================================================
+
+If the project uses:
+
+@/components/ui/sonner
+
+properly mount:
+
+<Toaster />
+
+in the application root.
+
+Use toast notifications for:
+
+Guest created
+Guest updated
+Guest deleted
+Invitation copied
+Code copied
+RSVP submitted
+Guest admitted
+Invalid invitation
+Already-used invitation
+Settings saved
+Programme saved
+CSV imported
+
+==================================================
+32. FONTS
+==================================================
+
+Use:
+
+Cormorant
+
+for elegant headings/deceased name.
+
+Karla
+
+for body and UI.
+
+Load them correctly according to the existing framework.
+
+==================================================
+33. ROOT METADATA
+==================================================
+
+Replace starter-project metadata.
+
+Use an appropriate title similar to:
+
+Pa Emmanuel Ayodele Abatan — Memorial & Invitation
+
+Create a respectful description.
+
+Do not leave generic starter metadata.
+
+==================================================
+34. ERROR STATES
+==================================================
+
+Implement clean error states.
+
+Invalid invitation:
+
+Invitation not found. Please check your invitation code.
+
+Invalid secure token:
+
+This invitation is unavailable.
+
+Already used:
+
+Invitation already used.
+
+Unauthorized admin:
+
+Access denied.
+
+Unauthorized check-in:
+
+Please sign in to continue.
+
+Server error:
+
+Something went wrong. Please try again.
+
+Do not expose raw database errors.
+
+==================================================
+35. LOADING STATES
+==================================================
+
+Add loading states for:
+
+Invitation loading
+Guest lookup
+RSVP
+Check-in
+Guest creation
+Guest editing
+Guest deletion
+CSV import
+Settings saving
+Programme saving
+
+Prevent duplicate button submissions while operations are processing.
+
+==================================================
+36. ADMIN/USHER ACCESS
+==================================================
+
+Admin has full management access.
+
+Usher has check-in access.
+
+Guests have invitation access only.
+
+A guest visiting:
+
+/admin
+
+must NOT see the dashboard.
+
+A guest visiting:
+
+/check-in
+
+must NOT be able to check anybody in.
+
+They should see the appropriate login/access-denied page.
+
+Guest invitation:
+
+/invite/<secure-token>
+
+must work without login.
+
+==================================================
+37. NO QR SCANNER
+==================================================
+
+Do NOT make QR scanning a required part of the system.
+
+The event does not have scanners.
+
+The main check-in method is:
+
+Usher opens check-in page
+→ enters invitation code manually
+→ sees guest
+→ verifies name
+→ taps Admit Guest
+
+QR can be omitted entirely.
+
+==================================================
+38. SPREADSHEET WORKFLOW
+==================================================
+
+The intended admin workflow is:
+
+Admin logs in.
+
+Admin opens Guests.
+
+Admin clicks:
+
+PASTE GUEST LIST
+
+Admin pastes spreadsheet.
+
+System previews guests.
+
+Admin clicks:
+
+IMPORT GUESTS
+
+System creates all guests.
+
+Each guest automatically gets:
+
+Unique invitation code
+Secure invitation token
+Personal invitation link
+Admission limit = 1
+RSVP = Pending
+
+Admin can then copy each guest's invitation link and send it privately.
+
+==================================================
+39. GUEST WORKFLOW
+==================================================
+
+Guest receives their personal invitation link through WhatsApp, SMS, email, etc.
+
+Guest taps the link.
+
+Invitation opens immediately.
+
+NO LOGIN.
+
+Guest sees:
+
+Their name
+Memorial details
+Waykeep
+Burial
+Venue
+Dress code
+Programme
+Aso-Ebi information
+Admission limit
+
+Guest can RSVP.
+
+==================================================
+40. VENUE CHECK-IN WORKFLOW
+==================================================
+
+At the venue:
+
+Usher logs into:
+
+/check-in
+
+Usher enters:
+
+ADEWALE-4821
+
+System finds guest.
+
+Shows:
+
+Adewale Abatan
+1 person
+Not checked in
+
+Usher confirms the person's name.
+
+Usher clicks:
+
+ADMIT GUEST
+
+System records check-in.
+
+Invitation becomes used.
+
+If someone tries the same code again:
+
+INVITATION ALREADY USED
+
+and admission is blocked.
+
+==================================================
+41. FORWARDING
+==================================================
+
+The invitation can technically be forwarded, so do not claim that forwarding can be completely prevented.
+
+The security mechanism is:
+
+Unique invitation
++
+Secure token
++
+Guest identity/name verification
++
+One-time server-side check-in
+
+This prevents the same invitation from being admitted multiple times.
+
+==================================================
+42. TESTING
+==================================================
+
+Do a complete end-to-end test.
+
+TEST 1:
+
+Admin login works.
+
+TEST 2:
+
+Admin creates:
+
+Test Guest
+
+Admission limit:
+
+1
+
+TEST 3:
+
+System generates invitation code such as:
+
+TEST-GUEST-4821
+
+and secure token.
+
+TEST 4:
+
+Open invitation URL.
+
+Verify:
+
+Guest name appears.
+
+No login is required.
+
+Event details appear.
+
+Waykeep = Citadel Global Community Church (CGCC)
+
+Burial = Ronnie D’Events
+
+Dress code = Purple
+
+Aso-Ebi section appears.
+
+TEST 5:
+
+RSVP as attending.
+
+Verify admin sees:
+
+Attending
+
+TEST 6:
+
+Open check-in as authenticated usher.
+
+Enter invitation code.
+
+Verify guest appears.
+
+TEST 7:
+
+Click:
+
+ADMIT GUEST
+
+Verify successful admission.
+
+TEST 8:
+
+Enter same code again.
+
+Verify:
+
+INVITATION ALREADY USED
+
+Verify second admission is blocked.
+
+TEST 9:
+
+Open check-in history.
+
+Verify test guest appears.
+
+TEST 10:
+
+Test spreadsheet paste/import.
+
+Create several test guests.
+
+Paste them.
+
+Preview them.
+
+Import them.
+
+Verify unique invitation codes are generated.
+
+TEST 11:
+
+Test invalid code.
+
+Verify proper error.
+
+TEST 12:
+
+Test admin route while logged out.
+
+Verify protected.
+
+TEST 13:
+
+Test check-in route while logged out.
+
+Verify protected.
+
+TEST 14:
+
+Verify guest invitation does NOT require authentication.
+
+==================================================
+43. BUILD AND TYPECHECK
+==================================================
+
+After implementation run:
+
+- Typecheck
+- Lint if configured
+- Build
+- Tests
+
+Fix ALL errors.
+
+Do not stop at the first successful build.
+
+Run the application.
+
+Test the actual pages.
+
+Test the actual database operations.
+
+Test the actual invitation flow.
+
+==================================================
+44. FINAL CHECKLIST
+==================================================
+
+Before declaring the project complete, verify:
+
+[ ] Public memorial page works
+
+[ ] Guest does NOT have login
+
+[ ] Guest does NOT need email
+
+[ ] Guest does NOT need password
+
+[ ] Guest does NOT need OTP
+
+[ ] Admin login works
+
+[ ] Usher login works
+
+[ ] Admin dashboard works
+
+[ ] Guest CRUD works
+
+[ ] Spreadsheet CSV import works
+
+[ ] Paste spreadsheet works
+
+[ ] Invitation codes generate
+
+[ ] Codes are unique
+
+[ ] Secure invitation tokens generate
+
+[ ] Personal invitation URL works
+
+[ ] Guest invitation opens without login
+
+[ ] RSVP works
+
+[ ] Admin sees RSVP
+
+[ ] Waykeep is CGCC
+
+[ ] Burial is Ronnie D’Events
+
+[ ] Dress code is Purple
+
+[ ] Aso-Ebi section works
+
+[ ] Aso-Ebi image displays correctly
+
+[ ] Aso-Ebi price is ₦10,000
+
+[ ] Aso-Ebi is 6 yards
+
+[ ] Sales deadline is 30 September 2026
+
+[ ] Event settings work
+
+[ ] Programme editor works
+
+[ ] Invitation management works
+
+[ ] Usher check-in works
+
+[ ] One-person admission is enforced
+
+[ ] Already-used invitation is blocked
+
+[ ] Double check-in protection works
+
+[ ] Check-in history works
+
+[ ] Audit log works
+
+[ ] Security rules work
+
+[ ] Admin routes are protected
+
+[ ] Check-in route is protected
+
+[ ] Guest routes are public via secure token
+
+[ ] Toast notifications work
+
+[ ] Cormorant/Karla typography works
+
+[ ] Root metadata updated
+
+[ ] Mobile layout works
+
+[ ] Loading states work
+
+[ ] Error states work
+
+[ ] Typecheck passes
+
+[ ] Build passes
+
+[ ] End-to-end guest → RSVP → check-in → already-used flow passes
+
+==================================================
+🚨 FINAL COMMAND
+==================================================
+
+DO NOT STOP AFTER FIXING THE EXISTING BUILD ERROR.
+
+DO NOT STOP AFTER BUILDING THE UI.
+
+DO NOT STOP AFTER CREATING THE DATABASE.
+
+DO NOT STOP AFTER MAKING ONE FEATURE WORK.
+
+CONTINUE THROUGH THE ENTIRE REQUIREMENT LIST.
+
+Inspect the existing project.
+
+Fix it.
+
+Implement missing features.
+
+Connect the database.
+
+Secure the application.
+
+Test everything.
+
+Fix the test failures.
+
+Run the final build.
+
+The goal is a COMPLETE, WORKING, POLISHED memorial invitation system — not a prototype and not a list of TODOs.
+
+Continue working until the application is genuinely functional end-to-end.

@@ -15,6 +15,8 @@ export interface Event {
   /** @nullable */
   year?: number | null;
   venue: string;
+  waykeepVenue: string;
+  burialVenue: string;
   dressCode: string;
   /** @nullable */
   biography?: string | null;
@@ -32,4 +34,6 @@ export interface Event {
   photoUrl?: string | null;
   /** @nullable */
   backgroundImageUrl?: string | null;
+  /** @nullable */
+  asoEbiInformation?: string | null;
 }

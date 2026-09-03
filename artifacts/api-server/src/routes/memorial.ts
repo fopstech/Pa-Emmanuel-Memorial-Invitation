@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { and, asc, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { Router, type IRouter, type Request } from "express";
 import { getAuth } from "@clerk/express";
 import {
@@ -53,7 +53,7 @@ import {
   UpdateProgrammeItemParams,
   UpdateProgrammeItemResponse,
 } from "@workspace/api-zod";
-import { requireAdmin, type AuthenticatedRequest } from "../middlewares/auth";
+import { requireAdmin, requireUsher, type AuthenticatedRequest } from "../middlewares/auth";
 
 const router: IRouter = Router();
 
@@ -63,8 +63,12 @@ const DEFAULT_EVENT = {
   waykeepDate: "2026-10-15",
   burialDate: "2026-10-16",
   year: 2026,
-  venue: "RONNIE D’EVENTS",
+  venue: "Ronnie D’Events",
+  waykeepVenue: "Citadel Global Community Church (CGCC)",
+  burialVenue: "Ronnie D’Events",
   dressCode: "Purple",
+  asoEbiInformation:
+    "ASO-EBI\n6 YARDS ONLY · ₦10,000\nSales end: 30th September, 2026\n\nPAYMENT INFORMATION\nOpay Account\nAccount Number: 8144963974\nAccount Name: Kasali Olawunmi\n\nNARRATION FOR PAYMENT\nDaddy Abatan\n\nSEND NOTIFICATIONS OF PAYMENT TO\n08027189122",
 };
 
 function actor(req: Request): string {
@@ -121,6 +125,48 @@ async function makeInvitationForName(name: string) {
   throw new Error("Unable to generate a unique invitation");
 }
 
+function normalizeImportHeader(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_")
+    .replace(/[^\w]/g, "");
+}
+
+function parseDelimitedRows(input: string): string[][] {
+  const delimiter = input.includes("\t") ? "\t" : ",";
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let quoted = false;
+
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index];
+    const next = input[index + 1];
+    if (char === '"' && quoted && next === '"') {
+      field += '"';
+      index += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === delimiter && !quoted) {
+      row.push(field);
+      field = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(field);
+      if (row.some((value) => value.trim())) rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += char;
+    }
+  }
+
+  row.push(field);
+  if (row.some((value) => value.trim())) rows.push(row);
+  return rows;
+}
+
 async function getAdminGuest(id: number) {
   const [row] = await db
     .select({ guest: guestsTable, invitation: invitationsTable })
@@ -138,6 +184,7 @@ async function getAdminGuest(id: number) {
     invitationCode: row.invitation.invitationCode,
     invitationToken: row.invitation.secureToken,
     admissionLimit: row.invitation.admissionLimit,
+    admittedCount: row.invitation.admittedCount,
     status: row.invitation.status,
     rsvpStatus: row.invitation.rsvpStatus,
     createdAt: row.guest.createdAt,
@@ -174,6 +221,7 @@ async function getAdminGuests(search?: string, status?: string, rsvp?: string) {
     invitationCode: invitation.invitationCode,
     invitationToken: invitation.secureToken,
     admissionLimit: invitation.admissionLimit,
+      admittedCount: invitation.admittedCount,
     status: invitation.status,
     rsvpStatus: invitation.rsvpStatus,
     createdAt: guest.createdAt,
@@ -292,6 +340,7 @@ router.get("/public/invitations/:token", async (req, res): Promise<void> => {
       guestName: row.guest.fullName,
       invitationCode: row.invitation.invitationCode,
       admissionLimit: row.invitation.admissionLimit,
+      admittedCount: row.invitation.admittedCount,
       status: row.invitation.status,
       rsvpStatus: row.invitation.rsvpStatus,
       event: row.event,
@@ -299,6 +348,23 @@ router.get("/public/invitations/:token", async (req, res): Promise<void> => {
       checkedInAt: row.invitation.checkedInAt,
     }),
   );
+});
+
+router.get("/public/invitations/code/:code", async (req, res): Promise<void> => {
+  const code = String(req.params.code ?? "").trim().toUpperCase();
+  if (code.length < 4) {
+    res.status(404).json({ error: "Invitation not found" });
+    return;
+  }
+  const [invitation] = await db
+    .select({ token: invitationsTable.secureToken, status: invitationsTable.status })
+    .from(invitationsTable)
+    .where(eq(invitationsTable.invitationCode, code));
+  if (!invitation || invitation.status === "disabled") {
+    res.status(404).json({ error: "Invitation not found" });
+    return;
+  }
+  res.json({ token: invitation.token });
 });
 
 router.post("/public/invitations/:token/rsvp", async (req, res): Promise<void> => {
@@ -346,6 +412,7 @@ router.post("/public/invitations/:token/rsvp", async (req, res): Promise<void> =
       guestName: guest.fullName,
       invitationCode: invitation.invitationCode,
       admissionLimit: invitation.admissionLimit,
+      admittedCount: invitation.admittedCount,
       status: invitation.status,
       rsvpStatus: invitation.rsvpStatus,
       event,
@@ -424,31 +491,57 @@ router.post("/admin/guests/import", requireAdmin, async (req, res): Promise<void
   const event = await ensureEvent();
   const created = [];
   const errors: { row: number; message: string }[] = [];
-  const lines = parsed.data.csv.split(/\r?\n/).filter((line: string) => line.trim());
-  for (const [index, line] of lines.entries()) {
-    const parts = line.split(",").map((part: string) => part.trim());
-    const [fullName, phone, email, limit] = parts;
-    if (index === 0 && fullName?.toLowerCase() === "name") continue;
+  const duplicates: { row: number; message: string }[] = [];
+  const rows = parseDelimitedRows(parsed.data.csv);
+  const headers = rows[0]?.map(normalizeImportHeader) ?? [];
+  const hasHeader = headers.some((header) =>
+    ["full_name", "name", "email", "phone", "admission_limit"].includes(header),
+  );
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+  const columnIndex = (names: string[], fallback: number) => {
+    const index = names.map((name) => headers.indexOf(name)).find((index) => index >= 0);
+    return index ?? fallback;
+  };
+  const nameIndex = columnIndex(["full_name", "name"], 0);
+  const emailIndex = columnIndex(["email", "email_address"], 1);
+  const phoneIndex = columnIndex(["phone", "telephone", "mobile"], 2);
+  const limitIndex = columnIndex(["admission_limit", "admission", "limit", "guests"], 3);
+
+  for (const [index, parts] of dataRows.entries()) {
+    const fullName = parts[nameIndex]?.trim() ?? "";
+    const email = parts[emailIndex]?.trim() ?? "";
+    const phone = parts[phoneIndex]?.trim() ?? "";
+    const limit = parts[limitIndex]?.trim() ?? "";
+    const rowNumber = hasHeader ? index + 2 : index + 1;
     if (!fullName || fullName.length < 2) {
-      errors.push({ row: index + 1, message: "Name is required" });
+      errors.push({ row: rowNumber, message: "Name is required" });
       continue;
     }
     const admissionLimit = Number(limit || 1);
     if (!Number.isInteger(admissionLimit) || admissionLimit < 1) {
-      errors.push({ row: index + 1, message: "Admission limit must be a positive whole number" });
+      errors.push({ row: rowNumber, message: "Admission limit must be a positive whole number" });
       continue;
     }
     try {
+      const [existingGuest] = await db
+        .select({ id: guestsTable.id })
+        .from(guestsTable)
+        .where(ilike(guestsTable.fullName, fullName))
+        .limit(1);
+      if (existingGuest) {
+        duplicates.push({ row: rowNumber, message: `${fullName} already exists` });
+        continue;
+      }
       const { code, token } = await makeInvitationForName(fullName);
       const [guest] = await db.insert(guestsTable).values({ fullName, phone: phone || null, email: email || null }).returning();
       await db.insert(invitationsTable).values({ guestId: guest.id, eventId: event.id, invitationCode: code, secureToken: token, admissionLimit });
       const item = await getAdminGuest(guest.id);
       if (item) created.push(item);
     } catch {
-      errors.push({ row: index + 1, message: "Could not create this guest" });
+      errors.push({ row: rowNumber, message: "Could not create this guest" });
     }
   }
-  res.json(ImportGuestsResponse.parse({ created, errors }));
+  res.json(ImportGuestsResponse.parse({ created, errors, duplicates }));
   await addAudit(req, "Guest list imported", `${created.length} created`);
 });
 
@@ -544,7 +637,7 @@ router.post("/admin/guests/:id/regenerate", requireAdmin, async (req, res): Prom
   await addAudit(req, "Invitation code regenerated", String(guest.id));
 });
 
-router.post("/admin/invitations/lookup", requireAdmin, async (req, res): Promise<void> => {
+router.post("/admin/invitations/lookup", requireUsher, async (req, res): Promise<void> => {
   const parsed = LookupInvitationBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid invitation code" });
@@ -559,31 +652,65 @@ router.post("/admin/invitations/lookup", requireAdmin, async (req, res): Promise
     res.json(LookupInvitationResponse.parse({ result: "invalid", invitation: null }));
     return;
   }
-  const result = row.invitation.status === "checked_in" ? "used" : row.invitation.status === "disabled" ? "disabled" : "valid";
+  const result = row.invitation.status === "disabled"
+    ? "disabled"
+    : row.invitation.admittedCount >= row.invitation.admissionLimit
+      ? "used"
+      : "valid";
   res.json(LookupInvitationResponse.parse({ result, invitation: await getAdminGuest(row.guest.id) }));
 });
 
-router.post("/admin/invitations/:id/admit", requireAdmin, async (req, res): Promise<void> => {
+router.post("/admin/invitations/:id/admit", requireUsher, async (req, res): Promise<void> => {
   const id = Number(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
   if (!Number.isInteger(id)) {
     res.status(400).json({ error: "Invalid invitation" });
     return;
   }
+  const requestedCount = Number(req.body?.numberAdmitted ?? 1);
+  if (!Number.isInteger(requestedCount) || requestedCount < 1) {
+    res.status(400).json({ error: "Number admitted must be a positive whole number" });
+    return;
+  }
   const checkedInAt = new Date();
   const checkedInBy = actor(req);
   const result = await db.transaction(async (tx) => {
-    const [invitation] = await tx
+      const [current] = await tx
+        .select()
+        .from(invitationsTable)
+        .where(eq(invitationsTable.id, id))
+        .for("update");
+      if (!current) return { outcome: "not_found" as const };
+      if (current.status === "disabled") return { outcome: "disabled" as const };
+      if (current.admittedCount >= current.admissionLimit) return { outcome: "used" as const };
+      if (current.admittedCount + requestedCount > current.admissionLimit) {
+        return { outcome: "limit_exceeded" as const, remaining: current.admissionLimit - current.admittedCount };
+      }
+      const admittedCount = current.admittedCount + requestedCount;
+      const [invitation] = await tx
       .update(invitationsTable)
-      .set({ status: "checked_in", checkedInAt, checkedInBy, updatedAt: checkedInAt })
-      .where(and(eq(invitationsTable.id, id), ne(invitationsTable.status, "checked_in"), ne(invitationsTable.status, "disabled")))
+        .set({
+          admittedCount,
+          status: admittedCount >= current.admissionLimit ? "checked_in" : "confirmed",
+          checkedInAt,
+          checkedInBy,
+          updatedAt: checkedInAt,
+        })
+        .where(eq(invitationsTable.id, id))
       .returning();
-    if (!invitation) return { outcome: "used" as const };
-    await tx.insert(checkInsTable).values({ invitationId: invitation.id, guestId: invitation.guestId, checkedInAt, checkedInBy });
-    return { outcome: "admitted" as const, invitation };
+      await tx.insert(checkInsTable).values({
+        invitationId: invitation.id,
+        guestId: invitation.guestId,
+        checkedInAt,
+        checkedInBy,
+        numberAdmitted: requestedCount,
+      });
+      return { outcome: "admitted" as const, invitation };
   });
   if (result.outcome !== "admitted") {
     const [invitation] = await db.select().from(invitationsTable).where(eq(invitationsTable.id, id));
-    const outcome = invitation?.status === "disabled" ? "disabled" : invitation ? "used" : "not_found";
+    const outcome = result.outcome === "limit_exceeded"
+      ? "limit_exceeded"
+      : invitation?.status === "disabled" ? "disabled" : invitation ? "used" : "not_found";
     res.json(AdmitInvitationResponse.parse({ result: outcome, invitation: null, checkedInAt: invitation?.checkedInAt ?? null }));
     return;
   }
@@ -592,7 +719,7 @@ router.post("/admin/invitations/:id/admit", requireAdmin, async (req, res): Prom
   await addAudit(req, "Guest checked in", String(result.invitation.guestId));
 });
 
-router.get("/admin/check-ins", requireAdmin, async (req, res): Promise<void> => {
+router.get("/admin/check-ins", requireUsher, async (req, res): Promise<void> => {
   const parsed = ListCheckInsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid check-in filters" });
@@ -611,6 +738,7 @@ router.get("/admin/check-ins", requireAdmin, async (req, res): Promise<void> => 
     invitationCode: invitation.invitationCode,
     checkedInAt: checkIn.checkedInAt,
     checkedInBy: checkIn.checkedInBy,
+    numberAdmitted: checkIn.numberAdmitted,
   }))));
 });
 

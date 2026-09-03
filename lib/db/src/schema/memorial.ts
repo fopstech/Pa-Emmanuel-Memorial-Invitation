@@ -18,6 +18,12 @@ export const eventsTable = pgTable("events", {
   burialDate: date("burial_date", { mode: "string" }).notNull(),
   year: integer("year"),
   venue: text("venue").notNull(),
+  waykeepVenue: text("waykeep_venue")
+    .notNull()
+    .default("Citadel Global Community Church (CGCC)"),
+  burialVenue: text("burial_venue")
+    .notNull()
+    .default("Ronnie D’Events"),
   dressCode: text("dress_code").notNull(),
   biography: text("biography"),
   tribute: text("tribute"),
@@ -27,6 +33,7 @@ export const eventsTable = pgTable("events", {
   mapUrl: text("map_url"),
   photoUrl: text("photo_url"),
   backgroundImageUrl: text("background_image_url"),
+  asoEbiInformation: text("aso_ebi_information"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
@@ -60,6 +67,7 @@ export const invitationsTable = pgTable(
     invitationCode: text("invitation_code").notNull(),
     secureToken: text("secure_token").notNull(),
     admissionLimit: integer("admission_limit").notNull().default(1),
+    admittedCount: integer("admitted_count").notNull().default(0),
     status: text("status").notNull().default("pending"),
     rsvpStatus: text("rsvp_status").notNull().default("pending"),
     checkedInAt: timestamp("checked_in_at", { withTimezone: true }),
@@ -99,6 +107,7 @@ export const checkInsTable = pgTable("check_ins", {
     .references(() => guestsTable.id, { onDelete: "cascade" }),
   checkedInAt: timestamp("checked_in_at", { withTimezone: true }).notNull().defaultNow(),
   checkedInBy: text("checked_in_by").notNull(),
+  numberAdmitted: integer("number_admitted").notNull().default(1),
 });
 
 export const auditLogsTable = pgTable("audit_logs", {

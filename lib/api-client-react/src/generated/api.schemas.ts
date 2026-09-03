@@ -18,6 +18,8 @@ export interface Event {
   /** @nullable */
   year?: number | null;
   venue: string;
+  waykeepVenue: string;
+  burialVenue: string;
   dressCode: string;
   /** @nullable */
   biography?: string | null;
@@ -35,6 +37,8 @@ export interface Event {
   photoUrl?: string | null;
   /** @nullable */
   backgroundImageUrl?: string | null;
+  /** @nullable */
+  asoEbiInformation?: string | null;
 }
 
 export interface EventUpdate {
@@ -45,6 +49,8 @@ export interface EventUpdate {
   /** @nullable */
   year?: number | null;
   venue?: string;
+  waykeepVenue?: string;
+  burialVenue?: string;
   dressCode?: string;
   /** @nullable */
   biography?: string | null;
@@ -62,6 +68,8 @@ export interface EventUpdate {
   photoUrl?: string | null;
   /** @nullable */
   backgroundImageUrl?: string | null;
+  /** @nullable */
+  asoEbiInformation?: string | null;
 }
 
 export interface ProgrammeItem {
@@ -124,12 +132,17 @@ export interface PublicInvitation {
   guestName: string;
   invitationCode: string;
   admissionLimit: number;
+  admittedCount: number;
   status: PublicInvitationStatus;
   rsvpStatus: PublicInvitationRsvpStatus;
   event: Event;
   programme: ProgrammeItem[];
   /** @nullable */
   checkedInAt?: string | null;
+}
+
+export interface PublicInvitationLookup {
+  token: string;
 }
 
 export type RsvpInputResponse = typeof RsvpInputResponse[keyof typeof RsvpInputResponse];
@@ -202,6 +215,7 @@ export interface AdminGuest {
   invitationCode: string;
   invitationToken: string;
   admissionLimit: number;
+  admittedCount: number;
   status: AdminGuestStatus;
   rsvpStatus: AdminGuestRsvpStatus;
   createdAt: string;
@@ -221,9 +235,15 @@ export type GuestImportResultErrorsItem = {
   message: string;
 };
 
+export type GuestImportResultDuplicatesItem = {
+  row: number;
+  message: string;
+};
+
 export interface GuestImportResult {
   created: AdminGuest[];
   errors: GuestImportResultErrorsItem[];
+  duplicates: GuestImportResultDuplicatesItem[];
 }
 
 export interface InvitationLookupInput {
@@ -254,6 +274,7 @@ export const AdmissionResultResult = {
   used: 'used',
   disabled: 'disabled',
   not_found: 'not_found',
+  limit_exceeded: 'limit_exceeded',
 } as const;
 
 export interface AdmissionResult {
@@ -261,6 +282,11 @@ export interface AdmissionResult {
   invitation?: AdminGuest | null;
   /** @nullable */
   checkedInAt?: string | null;
+}
+
+export interface AdmissionInput {
+  /** @minimum 1 */
+  numberAdmitted?: number;
 }
 
 export interface AuditRecord {
@@ -290,6 +316,7 @@ export interface CheckInRecord {
   invitationCode: string;
   checkedInAt: string;
   checkedInBy: string;
+  numberAdmitted?: number;
 }
 
 export interface UploadRequest {

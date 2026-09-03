@@ -21,6 +21,7 @@ import type {
 
 import type {
   AdminGuest,
+  AdmissionInput,
   AdmissionResult,
   AuditRecord,
   BadRequestResponse,
@@ -42,6 +43,7 @@ import type {
   ProgrammeItemInput,
   ProgrammeItemUpdate,
   PublicInvitation,
+  PublicInvitationLookup,
   RsvpInput,
   UnauthorizedResponse,
   UploadRequest,
@@ -657,6 +659,83 @@ export function useGetPublicInvitation<TData = Awaited<ReturnType<typeof getPubl
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetPublicInvitationQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getLookupPublicInvitationUrl = (code: string,) => {
+
+
+
+
+  return `/api/public/invitations/code/${code}`
+}
+
+/**
+ * @summary Find a public invitation by friendly code
+ */
+export const lookupPublicInvitation = async (code: string, options?: Parameters<typeof customFetch>[1]): Promise<PublicInvitationLookup> => {
+
+  return customFetch<PublicInvitationLookup>(getLookupPublicInvitationUrl(code),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLookupPublicInvitationQueryKey = (code: string,) => {
+    return [
+    `/api/public/invitations/code/${code}`
+    ] as const;
+    }
+
+
+export const getLookupPublicInvitationQueryOptions = <TData = Awaited<ReturnType<typeof lookupPublicInvitation>>, TError = ErrorType<NotFoundResponse>>(code: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lookupPublicInvitation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLookupPublicInvitationQueryKey(code);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lookupPublicInvitation>>> = ({ signal }) => lookupPublicInvitation(code, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: code !== null && code !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lookupPublicInvitation>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type LookupPublicInvitationQueryResult = NonNullable<Awaited<ReturnType<typeof lookupPublicInvitation>>>
+export type LookupPublicInvitationQueryError = ErrorType<NotFoundResponse>
+
+
+/**
+ * @summary Find a public invitation by friendly code
+ */
+
+export function useLookupPublicInvitation<TData = Awaited<ReturnType<typeof lookupPublicInvitation>>, TError = ErrorType<NotFoundResponse>>(
+ code: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lookupPublicInvitation>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getLookupPublicInvitationQueryOptions(code,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1559,14 +1638,15 @@ export const getAdmitInvitationUrl = (id: number,) => {
 /**
  * @summary Atomically admit an invitation once
  */
-export const admitInvitation = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<AdmissionResult> => {
+export const admitInvitation = async (id: number,
+    admissionInput?: AdmissionInput, options?: Parameters<typeof customFetch>[1]): Promise<AdmissionResult> => {
 
   return customFetch<AdmissionResult>(getAdmitInvitationUrl(id),
   {
     ...options,
-    method: 'POST'
-
-
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(admissionInput)
   }
 );}
 
@@ -1575,8 +1655,8 @@ export const admitInvitation = async (id: number, options?: Parameters<typeof cu
 
 
 export const getAdmitInvitationMutationOptions = <TError = ErrorType<UnauthorizedResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof admitInvitation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof admitInvitation>>, TError,{id: number}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof admitInvitation>>, TError,{id: number;data?: BodyType<AdmissionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof admitInvitation>>, TError,{id: number;data?: BodyType<AdmissionInput>}, TContext> => {
 
 const mutationKey = ['admitInvitation'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -1588,10 +1668,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof admitInvitation>>, {id: number}> = (props) => {
-          const {id} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof admitInvitation>>, {id: number;data?: BodyType<AdmissionInput>}> = (props) => {
+          const {id,data} = props ?? {};
 
-          return  admitInvitation(id,requestOptions)
+          return  admitInvitation(id,data,requestOptions)
         }
 
 
@@ -1602,18 +1682,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type AdmitInvitationMutationResult = NonNullable<Awaited<ReturnType<typeof admitInvitation>>>
-
+    export type AdmitInvitationMutationBody = BodyType<AdmissionInput> | undefined
     export type AdmitInvitationMutationError = ErrorType<UnauthorizedResponse>
 
     /**
  * @summary Atomically admit an invitation once
  */
 export const useAdmitInvitation = <TError = ErrorType<UnauthorizedResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof admitInvitation>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof admitInvitation>>, TError,{id: number;data?: BodyType<AdmissionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof admitInvitation>>,
         TError,
-        {id: number},
+        {id: number;data?: BodyType<AdmissionInput>},
         TContext
       > => {
       return useMutation(getAdmitInvitationMutationOptions(options));

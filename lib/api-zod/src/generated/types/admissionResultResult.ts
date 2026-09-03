@@ -14,4 +14,5 @@ export const AdmissionResultResult = {
   used: 'used',
   disabled: 'disabled',
   not_found: 'not_found',
+  limit_exceeded: 'limit_exceeded',
 } as const;

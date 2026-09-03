@@ -6,9 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AdminGuest } from './adminGuest';
+import type { GuestImportResultDuplicatesItem } from './guestImportResultDuplicatesItem';
 import type { GuestImportResultErrorsItem } from './guestImportResultErrorsItem';
 
 export interface GuestImportResult {
   created: AdminGuest[];
   errors: GuestImportResultErrorsItem[];
+  duplicates: GuestImportResultDuplicatesItem[];
 }

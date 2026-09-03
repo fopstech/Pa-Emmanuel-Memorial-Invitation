@@ -6,11 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CheckInRecord {
-  id: number;
-  guestName: string;
-  invitationCode: string;
-  checkedInAt: Date;
-  checkedInBy: string;
+export interface AdmissionInput {
+  /** @minimum 1 */
   numberAdmitted?: number;
 }

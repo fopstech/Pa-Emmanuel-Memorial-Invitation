@@ -28,6 +28,8 @@ export const GetEventResponse = zod.object({
   "burialDate": zod.string(),
   "year": zod.number().nullish(),
   "venue": zod.string(),
+  "waykeepVenue": zod.string(),
+  "burialVenue": zod.string(),
   "dressCode": zod.string(),
   "biography": zod.string().nullish(),
   "tribute": zod.string().nullish(),
@@ -36,7 +38,8 @@ export const GetEventResponse = zod.object({
   "contactInformation": zod.string().nullish(),
   "mapUrl": zod.string().nullish(),
   "photoUrl": zod.string().nullish(),
-  "backgroundImageUrl": zod.string().nullish()
+  "backgroundImageUrl": zod.string().nullish(),
+  "asoEbiInformation": zod.string().nullish()
 })
 
 
@@ -50,6 +53,8 @@ export const UpdateEventBody = zod.object({
   "burialDate": zod.string().optional(),
   "year": zod.number().nullish(),
   "venue": zod.string().optional(),
+  "waykeepVenue": zod.string().optional(),
+  "burialVenue": zod.string().optional(),
   "dressCode": zod.string().optional(),
   "biography": zod.string().nullish(),
   "tribute": zod.string().nullish(),
@@ -58,7 +63,8 @@ export const UpdateEventBody = zod.object({
   "contactInformation": zod.string().nullish(),
   "mapUrl": zod.string().nullish(),
   "photoUrl": zod.string().nullish(),
-  "backgroundImageUrl": zod.string().nullish()
+  "backgroundImageUrl": zod.string().nullish(),
+  "asoEbiInformation": zod.string().nullish()
 })
 
 export const UpdateEventResponse = zod.object({
@@ -69,6 +75,8 @@ export const UpdateEventResponse = zod.object({
   "burialDate": zod.string(),
   "year": zod.number().nullish(),
   "venue": zod.string(),
+  "waykeepVenue": zod.string(),
+  "burialVenue": zod.string(),
   "dressCode": zod.string(),
   "biography": zod.string().nullish(),
   "tribute": zod.string().nullish(),
@@ -77,7 +85,8 @@ export const UpdateEventResponse = zod.object({
   "contactInformation": zod.string().nullish(),
   "mapUrl": zod.string().nullish(),
   "photoUrl": zod.string().nullish(),
-  "backgroundImageUrl": zod.string().nullish()
+  "backgroundImageUrl": zod.string().nullish(),
+  "asoEbiInformation": zod.string().nullish()
 })
 
 
@@ -167,6 +176,7 @@ export const GetPublicInvitationResponse = zod.object({
   "guestName": zod.string(),
   "invitationCode": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "event": zod.object({
@@ -177,6 +187,8 @@ export const GetPublicInvitationResponse = zod.object({
   "burialDate": zod.string(),
   "year": zod.number().nullish(),
   "venue": zod.string(),
+  "waykeepVenue": zod.string(),
+  "burialVenue": zod.string(),
   "dressCode": zod.string(),
   "biography": zod.string().nullish(),
   "tribute": zod.string().nullish(),
@@ -185,7 +197,8 @@ export const GetPublicInvitationResponse = zod.object({
   "contactInformation": zod.string().nullish(),
   "mapUrl": zod.string().nullish(),
   "photoUrl": zod.string().nullish(),
-  "backgroundImageUrl": zod.string().nullish()
+  "backgroundImageUrl": zod.string().nullish(),
+  "asoEbiInformation": zod.string().nullish()
 }),
   "programme": zod.array(zod.object({
   "id": zod.number(),
@@ -197,6 +210,18 @@ export const GetPublicInvitationResponse = zod.object({
   "sortOrder": zod.number()
 })),
   "checkedInAt": zod.coerce.date().nullish()
+})
+
+
+/**
+ * @summary Find a public invitation by friendly code
+ */
+export const LookupPublicInvitationParams = zod.object({
+  "code": zod.coerce.string()
+})
+
+export const LookupPublicInvitationResponse = zod.object({
+  "token": zod.string()
 })
 
 
@@ -215,6 +240,7 @@ export const SubmitRsvpResponse = zod.object({
   "guestName": zod.string(),
   "invitationCode": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "event": zod.object({
@@ -225,6 +251,8 @@ export const SubmitRsvpResponse = zod.object({
   "burialDate": zod.string(),
   "year": zod.number().nullish(),
   "venue": zod.string(),
+  "waykeepVenue": zod.string(),
+  "burialVenue": zod.string(),
   "dressCode": zod.string(),
   "biography": zod.string().nullish(),
   "tribute": zod.string().nullish(),
@@ -233,7 +261,8 @@ export const SubmitRsvpResponse = zod.object({
   "contactInformation": zod.string().nullish(),
   "mapUrl": zod.string().nullish(),
   "photoUrl": zod.string().nullish(),
-  "backgroundImageUrl": zod.string().nullish()
+  "backgroundImageUrl": zod.string().nullish(),
+  "asoEbiInformation": zod.string().nullish()
 }),
   "programme": zod.array(zod.object({
   "id": zod.number(),
@@ -289,6 +318,7 @@ export const ListGuestsResponseItem = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -325,6 +355,7 @@ export const CreateGuestResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -354,6 +385,7 @@ export const ImportGuestsResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -361,6 +393,10 @@ export const ImportGuestsResponse = zod.object({
   "checkedInBy": zod.string().nullish()
 })),
   "errors": zod.array(zod.object({
+  "row": zod.number(),
+  "message": zod.string()
+})),
+  "duplicates": zod.array(zod.object({
   "row": zod.number(),
   "message": zod.string()
 }))
@@ -384,6 +420,7 @@ export const GetGuestResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -422,6 +459,7 @@ export const UpdateGuestResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -457,6 +495,7 @@ export const DisableInvitationResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -482,6 +521,7 @@ export const EnableInvitationResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -507,6 +547,7 @@ export const RegenerateInvitationResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -538,6 +579,7 @@ export const LookupInvitationResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -554,8 +596,16 @@ export const AdmitInvitationParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const admitInvitationBodyNumberAdmittedDefault = 1;
+
+
+
+export const AdmitInvitationBody = zod.object({
+  "numberAdmitted": zod.number().min(1).default(admitInvitationBodyNumberAdmittedDefault)
+})
+
 export const AdmitInvitationResponse = zod.object({
-  "result": zod.enum(['admitted', 'used', 'disabled', 'not_found']),
+  "result": zod.enum(['admitted', 'used', 'disabled', 'not_found', 'limit_exceeded']),
   "invitation": zod.union([zod.object({
   "id": zod.number(),
   "invitationId": zod.number(),
@@ -566,6 +616,7 @@ export const AdmitInvitationResponse = zod.object({
   "invitationCode": zod.string(),
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
+  "admittedCount": zod.number(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -589,7 +640,8 @@ export const ListCheckInsResponseItem = zod.object({
   "guestName": zod.string(),
   "invitationCode": zod.string(),
   "checkedInAt": zod.coerce.date(),
-  "checkedInBy": zod.string()
+  "checkedInBy": zod.string(),
+  "numberAdmitted": zod.number().optional()
 })
 export const ListCheckInsResponse = zod.array(ListCheckInsResponseItem)
 

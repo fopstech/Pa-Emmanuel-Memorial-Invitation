@@ -21,6 +21,7 @@ export interface AdminGuest {
   invitationCode: string;
   invitationToken: string;
   admissionLimit: number;
+  admittedCount: number;
   status: AdminGuestStatus;
   rsvpStatus: AdminGuestRsvpStatus;
   createdAt: Date;
