@@ -7,6 +7,7 @@
  */
 
 export * from './adminGuest';
+export * from './adminGuestPaymentStatus';
 export * from './adminGuestRsvpStatus';
 export * from './adminGuestStatus';
 export * from './admissionInput';
@@ -34,11 +35,15 @@ export * from './listGuestsParams';
 export * from './listGuestsRsvp';
 export * from './listGuestsStatus';
 export * from './notFoundResponse';
+export * from './paymentProofInput';
+export * from './paymentProofResponse';
+export * from './paymentProofResponsePaymentStatus';
 export * from './programmeItem';
 export * from './programmeItemInput';
 export * from './programmeItemUpdate';
 export * from './publicInvitation';
 export * from './publicInvitationLookup';
+export * from './publicInvitationPaymentStatus';
 export * from './publicInvitationRsvpStatus';
 export * from './publicInvitationStatus';
 export * from './rsvpInput';

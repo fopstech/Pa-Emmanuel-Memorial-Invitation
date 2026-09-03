@@ -7,6 +7,7 @@
  */
 import type { Event } from './event';
 import type { ProgrammeItem } from './programmeItem';
+import type { PublicInvitationPaymentStatus } from './publicInvitationPaymentStatus';
 import type { PublicInvitationRsvpStatus } from './publicInvitationRsvpStatus';
 import type { PublicInvitationStatus } from './publicInvitationStatus';
 
@@ -15,6 +16,11 @@ export interface PublicInvitation {
   invitationCode: string;
   admissionLimit: number;
   admittedCount: number;
+  paymentStatus: PublicInvitationPaymentStatus;
+  /** @nullable */
+  paymentReference?: string | null;
+  /** @nullable */
+  paymentSubmittedAt?: Date | null;
   status: PublicInvitationStatus;
   rsvpStatus: PublicInvitationRsvpStatus;
   event: Event;

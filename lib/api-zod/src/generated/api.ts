@@ -177,6 +177,9 @@ export const GetPublicInvitationResponse = zod.object({
   "invitationCode": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "event": zod.object({
@@ -241,6 +244,9 @@ export const SubmitRsvpResponse = zod.object({
   "invitationCode": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "event": zod.object({
@@ -274,6 +280,29 @@ export const SubmitRsvpResponse = zod.object({
   "sortOrder": zod.number()
 })),
   "checkedInAt": zod.coerce.date().nullish()
+})
+
+
+/**
+ * @summary Submit an Opay payment reference for family verification
+ */
+export const SubmitPaymentProofParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const submitPaymentProofBodyReferenceMin = 3;
+export const submitPaymentProofBodyReferenceMax = 120;
+
+
+
+export const SubmitPaymentProofBody = zod.object({
+  "reference": zod.string().min(submitPaymentProofBodyReferenceMin).max(submitPaymentProofBodyReferenceMax)
+})
+
+export const SubmitPaymentProofResponse = zod.object({
+  "paymentStatus": zod.enum(['pending']),
+  "paymentReference": zod.string(),
+  "paymentSubmittedAt": zod.coerce.date()
 })
 
 
@@ -319,6 +348,9 @@ export const ListGuestsResponseItem = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -356,6 +388,9 @@ export const CreateGuestResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -386,6 +421,9 @@ export const ImportGuestsResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -421,6 +459,9 @@ export const GetGuestResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -460,6 +501,9 @@ export const UpdateGuestResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -496,6 +540,9 @@ export const DisableInvitationResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -522,6 +569,9 @@ export const EnableInvitationResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -548,6 +598,9 @@ export const RegenerateInvitationResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -580,6 +633,9 @@ export const LookupInvitationResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),
@@ -617,6 +673,9 @@ export const AdmitInvitationResponse = zod.object({
   "invitationToken": zod.string(),
   "admissionLimit": zod.number(),
   "admittedCount": zod.number(),
+  "paymentStatus": zod.enum(['unpaid', 'pending', 'verified', 'declined']),
+  "paymentReference": zod.string().nullish(),
+  "paymentSubmittedAt": zod.coerce.date().nullish(),
   "status": zod.enum(['pending', 'confirmed', 'checked_in', 'disabled']),
   "rsvpStatus": zod.enum(['pending', 'yes', 'no']),
   "createdAt": zod.coerce.date(),

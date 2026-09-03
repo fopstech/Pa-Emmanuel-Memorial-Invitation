@@ -195,6 +195,32 @@ paths:
                 $ref: "#/components/schemas/PublicInvitation"
         "404":
           $ref: "#/components/responses/NotFound"
+  /public/invitations/{token}/payment-proof:
+    post:
+      operationId: submitPaymentProof
+      tags: [invitations]
+      summary: Submit an Opay payment reference for family verification
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProofInput"
+      responses:
+        "200":
+          description: Payment proof received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentProofResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /admin/dashboard:
     get:
       operationId: getAdminDashboard
@@ -568,12 +594,17 @@ components:
         sortOrder: { type: number }
     PublicInvitation:
       type: object
-      required: [guestName, invitationCode, admissionLimit, admittedCount, status, rsvpStatus, event, programme]
+      required: [guestName, invitationCode, admissionLimit, admittedCount, paymentStatus, status, rsvpStatus, event, programme]
       properties:
         guestName: { type: string }
         invitationCode: { type: string }
         admissionLimit: { type: number }
         admittedCount: { type: number }
+        paymentStatus:
+          type: string
+          enum: [unpaid, pending, verified, declined]
+        paymentReference: { type: ["string", "null"] }
+        paymentSubmittedAt: { type: ["string", "null"], format: date-time }
         status:
           type: string
           enum: [pending, confirmed, checked_in, disabled]
@@ -618,7 +649,7 @@ components:
         admissionLimit: { type: number, minimum: 1 }
     AdminGuest:
       type: object
-      required: [id, invitationId, fullName, invitationCode, invitationToken, admissionLimit, admittedCount, status, rsvpStatus, createdAt]
+      required: [id, invitationId, fullName, invitationCode, invitationToken, admissionLimit, admittedCount, paymentStatus, status, rsvpStatus, createdAt]
       properties:
         id: { type: number }
         invitationId: { type: number }
@@ -630,6 +661,11 @@ components:
         invitationToken: { type: string }
         admissionLimit: { type: number }
         admittedCount: { type: number }
+        paymentStatus:
+          type: string
+          enum: [unpaid, pending, verified, declined]
+        paymentReference: { type: ["string", "null"] }
+        paymentSubmittedAt: { type: ["string", "null"], format: date-time }
         status:
           type: string
           enum: [pending, confirmed, checked_in, disabled]
@@ -700,6 +736,20 @@ components:
       type: object
       properties:
         numberAdmitted: { type: number, minimum: 1, default: 1 }
+    PaymentProofInput:
+      type: object
+      required: [reference]
+      properties:
+        reference: { type: string, minLength: 3, maxLength: 120 }
+    PaymentProofResponse:
+      type: object
+      required: [paymentStatus, paymentReference, paymentSubmittedAt]
+      properties:
+        paymentStatus:
+          type: string
+          enum: [pending]
+        paymentReference: { type: string }
+        paymentSubmittedAt: { type: string, format: date-time }
     DashboardSummary:
       type: object
       required: [totalInvited, confirmed, pending, checkedIn, notCheckedIn, disabled, rsvpYes, rsvpNo]

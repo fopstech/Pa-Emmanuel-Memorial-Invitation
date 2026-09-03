@@ -44,6 +44,9 @@ import {
   SubmitRsvpBody,
   SubmitRsvpParams,
   SubmitRsvpResponse,
+  SubmitPaymentProofBody,
+  SubmitPaymentProofParams,
+  SubmitPaymentProofResponse,
   UpdateEventBody,
   UpdateEventResponse,
   UpdateGuestBody,
@@ -185,6 +188,9 @@ async function getAdminGuest(id: number) {
     invitationToken: row.invitation.secureToken,
     admissionLimit: row.invitation.admissionLimit,
     admittedCount: row.invitation.admittedCount,
+    paymentStatus: row.invitation.paymentStatus,
+    paymentReference: row.invitation.paymentReference,
+    paymentSubmittedAt: row.invitation.paymentSubmittedAt,
     status: row.invitation.status,
     rsvpStatus: row.invitation.rsvpStatus,
     createdAt: row.guest.createdAt,
@@ -221,7 +227,10 @@ async function getAdminGuests(search?: string, status?: string, rsvp?: string) {
     invitationCode: invitation.invitationCode,
     invitationToken: invitation.secureToken,
     admissionLimit: invitation.admissionLimit,
-      admittedCount: invitation.admittedCount,
+    admittedCount: invitation.admittedCount,
+    paymentStatus: invitation.paymentStatus,
+    paymentReference: invitation.paymentReference,
+    paymentSubmittedAt: invitation.paymentSubmittedAt,
     status: invitation.status,
     rsvpStatus: invitation.rsvpStatus,
     createdAt: guest.createdAt,
@@ -341,6 +350,9 @@ router.get("/public/invitations/:token", async (req, res): Promise<void> => {
       invitationCode: row.invitation.invitationCode,
       admissionLimit: row.invitation.admissionLimit,
       admittedCount: row.invitation.admittedCount,
+      paymentStatus: row.invitation.paymentStatus,
+      paymentReference: row.invitation.paymentReference,
+      paymentSubmittedAt: row.invitation.paymentSubmittedAt,
       status: row.invitation.status,
       rsvpStatus: row.invitation.rsvpStatus,
       event: row.event,
@@ -368,7 +380,7 @@ router.get("/public/invitations/code/:code", async (req, res): Promise<void> => 
 });
 
 router.post("/public/invitations/:token/rsvp", async (req, res): Promise<void> => {
-  const params = SubmitRsvpParams.safeParse(req.params);
+  const params = SubmitPaymentProofParams.safeParse(req.params);
   const body = SubmitRsvpBody.safeParse(req.body);
   if (!params.success || !body.success) {
     res.status(400).json({ error: "Invalid RSVP" });
@@ -413,11 +425,44 @@ router.post("/public/invitations/:token/rsvp", async (req, res): Promise<void> =
       invitationCode: invitation.invitationCode,
       admissionLimit: invitation.admissionLimit,
       admittedCount: invitation.admittedCount,
+      paymentStatus: invitation.paymentStatus,
+      paymentReference: invitation.paymentReference,
+      paymentSubmittedAt: invitation.paymentSubmittedAt,
       status: invitation.status,
       rsvpStatus: invitation.rsvpStatus,
       event,
       programme,
       checkedInAt: invitation.checkedInAt,
+    }),
+  );
+});
+
+router.post("/public/invitations/:token/payment-proof", async (req, res): Promise<void> => {
+  const params = SubmitRsvpParams.safeParse(req.params);
+  const body = SubmitPaymentProofBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Enter a valid payment reference" });
+    return;
+  }
+  const [invitation] = await db
+    .update(invitationsTable)
+    .set({
+      paymentStatus: "pending",
+      paymentReference: body.data.reference.trim(),
+      paymentSubmittedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(invitationsTable.secureToken, params.data.token))
+    .returning();
+  if (!invitation) {
+    res.status(404).json({ error: "Invitation not found" });
+    return;
+  }
+  res.json(
+    SubmitPaymentProofResponse.parse({
+      paymentStatus: invitation.paymentStatus,
+      paymentReference: invitation.paymentReference,
+      paymentSubmittedAt: invitation.paymentSubmittedAt,
     }),
   );
 });

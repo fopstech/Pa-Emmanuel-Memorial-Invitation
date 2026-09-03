@@ -39,6 +39,8 @@ import type {
   ListCheckInsParams,
   ListGuestsParams,
   NotFoundResponse,
+  PaymentProofInput,
+  PaymentProofResponse,
   ProgrammeItem,
   ProgrammeItemInput,
   ProgrammeItemUpdate,
@@ -818,6 +820,78 @@ export const useSubmitRsvp = <TError = ErrorType<NotFoundResponse>,
         TContext
       > => {
       return useMutation(getSubmitRsvpMutationOptions(options));
+    }
+
+export const getSubmitPaymentProofUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invitations/${token}/payment-proof`
+}
+
+/**
+ * @summary Submit an Opay payment reference for family verification
+ */
+export const submitPaymentProof = async (token: string,
+    paymentProofInput: PaymentProofInput, options?: Parameters<typeof customFetch>[1]): Promise<PaymentProofResponse> => {
+
+  return customFetch<PaymentProofResponse>(getSubmitPaymentProofUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(paymentProofInput)
+  }
+);}
+
+
+
+
+
+export const getSubmitPaymentProofMutationOptions = <TError = ErrorType<NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPaymentProof>>, TError,{token: string;data: BodyType<PaymentProofInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitPaymentProof>>, TError,{token: string;data: BodyType<PaymentProofInput>}, TContext> => {
+
+const mutationKey = ['submitPaymentProof'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitPaymentProof>>, {token: string;data: BodyType<PaymentProofInput>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  submitPaymentProof(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitPaymentProofMutationResult = NonNullable<Awaited<ReturnType<typeof submitPaymentProof>>>
+    export type SubmitPaymentProofMutationBody = BodyType<PaymentProofInput>
+    export type SubmitPaymentProofMutationError = ErrorType<NotFoundResponse>
+
+    /**
+ * @summary Submit an Opay payment reference for family verification
+ */
+export const useSubmitPaymentProof = <TError = ErrorType<NotFoundResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPaymentProof>>, TError,{token: string;data: BodyType<PaymentProofInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitPaymentProof>>,
+        TError,
+        {token: string;data: BodyType<PaymentProofInput>},
+        TContext
+      > => {
+      return useMutation(getSubmitPaymentProofMutationOptions(options));
     }
 
 export const getGetAdminDashboardUrl = () => {

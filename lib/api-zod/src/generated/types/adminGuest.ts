@@ -5,6 +5,7 @@
  * Pa Emmanuel Ayodele Abatan memorial invitation API
  * OpenAPI spec version: 0.1.0
  */
+import type { AdminGuestPaymentStatus } from './adminGuestPaymentStatus';
 import type { AdminGuestRsvpStatus } from './adminGuestRsvpStatus';
 import type { AdminGuestStatus } from './adminGuestStatus';
 
@@ -22,6 +23,11 @@ export interface AdminGuest {
   invitationToken: string;
   admissionLimit: number;
   admittedCount: number;
+  paymentStatus: AdminGuestPaymentStatus;
+  /** @nullable */
+  paymentReference?: string | null;
+  /** @nullable */
+  paymentSubmittedAt?: Date | null;
   status: AdminGuestStatus;
   rsvpStatus: AdminGuestRsvpStatus;
   createdAt: Date;

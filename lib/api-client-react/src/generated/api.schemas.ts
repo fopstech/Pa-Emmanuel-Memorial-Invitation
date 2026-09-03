@@ -109,6 +109,16 @@ export interface ProgrammeItemUpdate {
   sortOrder?: number;
 }
 
+export type PublicInvitationPaymentStatus = typeof PublicInvitationPaymentStatus[keyof typeof PublicInvitationPaymentStatus];
+
+
+export const PublicInvitationPaymentStatus = {
+  unpaid: 'unpaid',
+  pending: 'pending',
+  verified: 'verified',
+  declined: 'declined',
+} as const;
+
 export type PublicInvitationStatus = typeof PublicInvitationStatus[keyof typeof PublicInvitationStatus];
 
 
@@ -133,6 +143,11 @@ export interface PublicInvitation {
   invitationCode: string;
   admissionLimit: number;
   admittedCount: number;
+  paymentStatus: PublicInvitationPaymentStatus;
+  /** @nullable */
+  paymentReference?: string | null;
+  /** @nullable */
+  paymentSubmittedAt?: string | null;
   status: PublicInvitationStatus;
   rsvpStatus: PublicInvitationRsvpStatus;
   event: Event;
@@ -183,6 +198,16 @@ export interface GuestUpdate {
   admissionLimit?: number;
 }
 
+export type AdminGuestPaymentStatus = typeof AdminGuestPaymentStatus[keyof typeof AdminGuestPaymentStatus];
+
+
+export const AdminGuestPaymentStatus = {
+  unpaid: 'unpaid',
+  pending: 'pending',
+  verified: 'verified',
+  declined: 'declined',
+} as const;
+
 export type AdminGuestStatus = typeof AdminGuestStatus[keyof typeof AdminGuestStatus];
 
 
@@ -216,6 +241,11 @@ export interface AdminGuest {
   invitationToken: string;
   admissionLimit: number;
   admittedCount: number;
+  paymentStatus: AdminGuestPaymentStatus;
+  /** @nullable */
+  paymentReference?: string | null;
+  /** @nullable */
+  paymentSubmittedAt?: string | null;
   status: AdminGuestStatus;
   rsvpStatus: AdminGuestRsvpStatus;
   createdAt: string;
@@ -287,6 +317,27 @@ export interface AdmissionResult {
 export interface AdmissionInput {
   /** @minimum 1 */
   numberAdmitted?: number;
+}
+
+export interface PaymentProofInput {
+  /**
+     * @minLength 3
+     * @maxLength 120
+     */
+  reference: string;
+}
+
+export type PaymentProofResponsePaymentStatus = typeof PaymentProofResponsePaymentStatus[keyof typeof PaymentProofResponsePaymentStatus];
+
+
+export const PaymentProofResponsePaymentStatus = {
+  pending: 'pending',
+} as const;
+
+export interface PaymentProofResponse {
+  paymentStatus: PaymentProofResponsePaymentStatus;
+  paymentReference: string;
+  paymentSubmittedAt: string;
 }
 
 export interface AuditRecord {
