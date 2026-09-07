@@ -747,6 +747,30 @@ router.post("/admin/invitations/:id/admit", requireUsher, async (req, res): Prom
   await addAudit(req, "Guest checked in", String(result.invitation.guestId));
 });
 
+router.post("/admin/check-ins/:id/undo", requireAdmin, async (req, res): Promise<void> => {
+  const checkInId = Number(req.params.id);
+  if (!Number.isInteger(checkInId)) {
+    res.status(400).json({ error: "Invalid check-in" });
+    return;
+  }
+  const result = await db.transaction(async (tx) => {
+    const [checkIn] = await tx.select().from(checkInsTable).where(eq(checkInsTable.id, checkInId)).for("update");
+    if (!checkIn) return null;
+    const [invitation] = await tx.select().from(invitationsTable).where(eq(invitationsTable.id, checkIn.invitationId)).for("update");
+    if (!invitation) return null;
+    const admittedCount = Math.max(0, invitation.admittedCount - checkIn.numberAdmitted);
+    await tx.update(invitationsTable).set({ admittedCount, status: admittedCount > 0 ? "confirmed" : "pending", checkedInAt: null, checkedInBy: null, updatedAt: new Date() }).where(eq(invitationsTable.id, invitation.id));
+    await tx.delete(checkInsTable).where(eq(checkInsTable.id, checkInId));
+    return { guestId: checkIn.guestId, admittedCount };
+  });
+  if (!result) {
+    res.status(404).json({ error: "Check-in not found" });
+    return;
+  }
+  await addAudit(req, "Check-in undone", String(result.guestId));
+  res.json({ ok: true, ...result });
+});
+
 router.get("/admin/check-ins", requireUsher, async (req, res): Promise<void> => {
   const parsed = ListCheckInsQueryParams.safeParse(req.query);
   if (!parsed.success) {

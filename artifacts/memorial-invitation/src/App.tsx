@@ -412,7 +412,22 @@ function CheckInsWorkspace() {
 }
 
 function CheckInRow({ record }: { record: CheckInRecord }) {
-  return <div className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-bold">{record.guestName}</p><p className="mono-font mt-1 text-xs text-muted-foreground">{record.invitationCode}</p></div><div className="flex flex-wrap gap-4 text-xs text-muted-foreground"><span>{record.numberAdmitted} {record.numberAdmitted === 1 ? "person" : "people"} admitted</span><span>{formatDate(record.checkedInAt, true)}</span><span>By {record.checkedInBy}</span></div></div>;
+  const [pending, setPending] = useState(false);
+  const undo = async () => {
+    if (!window.confirm(`Undo check-in for ${record.guestName}?`)) return;
+    setPending(true);
+    try {
+      const response = await fetch(`${basePath}/api/admin/check-ins/${record.id}/undo`, { method: "POST", credentials: "include" });
+      if (!response.ok) throw new Error("Undo failed");
+      toast({ title: "Check-in undone" });
+      window.location.reload();
+    } catch {
+      toast({ title: "Could not undo check-in", description: "Please try again." });
+    } finally {
+      setPending(false);
+    }
+  };
+  return <div className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-bold">{record.guestName}</p><p className="mono-font mt-1 text-xs text-muted-foreground">{record.invitationCode}</p></div><div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground"><span>{record.numberAdmitted} {record.numberAdmitted === 1 ? "person" : "people"} admitted</span><span>{formatDate(record.checkedInAt, true)}</span><span>By {record.checkedInBy}</span><button onClick={undo} disabled={pending} className="font-bold text-destructive hover:underline disabled:opacity-50">Undo</button></div></div>;
 }
 
 function AuditPage() {
