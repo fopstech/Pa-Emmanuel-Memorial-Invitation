@@ -354,21 +354,28 @@ function Modal({ title, children, onClose }: { title: string; children: ReactNod
   return <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#252a3a]/45 p-0 backdrop-blur-sm sm:items-center sm:p-4" role="dialog" aria-modal="true"><div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-t-[2rem] bg-card p-6 shadow-2xl sm:rounded-[2rem] sm:p-8"><div className="mb-6 flex items-center justify-between"><h2 className="display-font text-3xl">{title}</h2><button onClick={onClose} className="focus-ring rounded-full p-2 text-muted-foreground hover:bg-muted"><X className="h-5 w-5" /></button></div>{children}</div></div>;
 }
 
-function AccessCodeGate({ code, title, description, storageKey, children }: { code: string; title: string; description: string; storageKey: string; children: ReactNode }) {
+function AccessCodeGate({ code: _code, title, description, storageKey, children }: { code: string; title: string; description: string; storageKey: string; children: ReactNode }) {
   const [unlocked, setUnlocked] = useState(() => typeof window !== "undefined" && window.sessionStorage.getItem(storageKey) === "unlocked");
   const [input, setInput] = useState("");
   const [error, setError] = useState(false);
+  const [pending, setPending] = useState(false);
   if (unlocked) return <>{children}</>;
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (input.trim() !== code) {
+    setPending(true);
+    setError(false);
+    try {
+      const response = await fetch(`${basePath}/api/staff/login`, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: input.trim() }) });
+      if (!response.ok) throw new Error("invalid");
+      window.sessionStorage.setItem(storageKey, "unlocked");
+      setUnlocked(true);
+    } catch {
       setError(true);
-      return;
+    } finally {
+      setPending(false);
     }
-    window.sessionStorage.setItem(storageKey, "unlocked");
-    setUnlocked(true);
   };
-  return <div className="grain flex min-h-[100dvh] items-center justify-center bg-[#e8dfd0] px-4 py-8"><form onSubmit={submit} className="w-full max-w-md rounded-[2rem] border border-border bg-card p-7 text-center soft-shadow"><BrandMark /><p className="mono-font mt-8 text-xs uppercase text-accent">Private access</p><h1 className="display-font mt-3 text-4xl">{title}</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p><input autoFocus inputMode="numeric" type="password" value={input} onChange={event => { setInput(event.target.value); setError(false); }} placeholder="Enter access code" aria-label="Access code" className="focus-ring mt-7 h-12 w-full rounded-xl border border-input bg-background px-4 text-center font-mono tracking-[.4em] outline-none" />{error && <p className="mt-3 text-xs font-semibold text-destructive">That code is not correct.</p>}<Button type="submit" className="mt-5 w-full">Continue</Button><Link href="/" className="mt-5 inline-block text-sm font-bold text-accent">Return to memorial</Link></form></div>;
+  return <div className="grain flex min-h-[100dvh] items-center justify-center bg-[#e8dfd0] px-4 py-8"><form onSubmit={submit} className="w-full max-w-md rounded-[2rem] border border-border bg-card p-7 text-center soft-shadow"><BrandMark /><p className="mono-font mt-8 text-xs uppercase text-accent">Private access</p><h1 className="display-font mt-3 text-4xl">{title}</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p><input autoFocus inputMode="numeric" type="password" value={input} onChange={event => { setInput(event.target.value); setError(false); }} placeholder="Enter access code" aria-label="Access code" className="focus-ring mt-7 h-12 w-full rounded-xl border border-input bg-background px-4 text-center font-mono tracking-[.4em] outline-none" />{error && <p className="mt-3 text-xs font-semibold text-destructive">That code is not correct.</p>}<Button type="submit" disabled={pending || !input.trim()} className="mt-5 w-full">{pending && <Loader2 className="h-4 w-4 animate-spin" />}Continue</Button><Link href="/" className="mt-5 inline-block text-sm font-bold text-accent">Return to memorial</Link></form></div>;
 }
 
 function FamilyDashboardGate({ children }: { children: ReactNode }) {
@@ -473,7 +480,7 @@ function AuthPage({ mode }: { mode: "in" | "up" }) {
 
 function Router() {
   const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/invite/:token" component={InvitePage} /><Route path="/check-in" component={() => <Protected><CheckInPage /></Protected>} /><Route path="/admin" component={() => <Protected><FamilyDashboardGate><AdminPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/guests" component={() => <Protected><FamilyDashboardGate><AdminPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/invitations" component={() => <Protected><FamilyDashboardGate><AdminPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/settings" component={() => <Protected><FamilyDashboardGate><SettingsPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/event" component={() => <Protected><FamilyDashboardGate><SettingsPage /></FamilyDashboardGate></Protected>} /><Route path="/admin/check-ins" component={() => <Protected><CheckInsPage /></Protected>} /><Route path="/admin/audit" component={() => <Protected><FamilyDashboardGate><AuditPage /></FamilyDashboardGate></Protected>} /><Route path="/sign-in/*?" component={() => <AuthPage mode="in" />} /><Route path="/sign-up/*?" component={() => <AuthPage mode="up" />} /><Route component={NotFound} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/invite/:token" component={InvitePage} /><Route path="/check-in" component={CheckInPage} /><Route path="/admin" component={() => <FamilyDashboardGate><AdminPage /></FamilyDashboardGate>} /><Route path="/admin/guests" component={() => <FamilyDashboardGate><AdminPage /></FamilyDashboardGate>} /><Route path="/admin/invitations" component={() => <FamilyDashboardGate><AdminPage /></FamilyDashboardGate>} /><Route path="/admin/settings" component={() => <FamilyDashboardGate><SettingsPage /></FamilyDashboardGate>} /><Route path="/admin/event" component={() => <FamilyDashboardGate><SettingsPage /></FamilyDashboardGate>} /><Route path="/admin/check-ins" component={() => <FamilyDashboardGate><CheckInsPage /></FamilyDashboardGate>} /><Route path="/admin/audit" component={() => <FamilyDashboardGate><AuditPage /></FamilyDashboardGate>} /><Route path="/sign-in/*?" component={() => <AuthPage mode="in" />} /><Route path="/sign-up/*?" component={() => <AuthPage mode="up" />} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
 function App() {
