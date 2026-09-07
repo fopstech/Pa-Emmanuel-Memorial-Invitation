@@ -427,6 +427,10 @@ router.post("/public/invitations/:token/payment-proof", async (req, res): Promis
     res.status(400).json({ error: "Enter a valid payment reference" });
     return;
   }
+  if (Date.now() >= new Date("2026-10-01T00:00:00+01:00").getTime()) {
+    res.status(410).json({ error: "Aso-Ebi sales closed on 30 September 2026" });
+    return;
+  }
   const [invitation] = await db
     .update(invitationsTable)
     .set({
