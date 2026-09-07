@@ -89,40 +89,19 @@ async function addAudit(req: Request, action: string, target?: string) {
   await db.insert(auditLogsTable).values({ action, target, actor: actor(req) });
 }
 
-function makeCode(name: string): string {
-  const prefix =
-    name
-      .normalize("NFKD")
-      .replace(/[^a-zA-Z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .toUpperCase()
-      .slice(0, 18) || "GUEST";
-  return `${prefix}-${crypto.randomInt(1000, 10000)}`;
+function normalizeInvitationCode(value: string): string {
+  const compact = value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const match = compact.match(/^PMA(\d{1,})$/);
+  return match ? `PMA-${match[1].padStart(3, "0")}` : value.trim().toUpperCase();
 }
 
-async function makeUniqueInvitation() {
+async function makeInvitationForName(_name: string) {
+  const [latest] = await db.select({ code: invitationsTable.invitationCode }).from(invitationsTable).where(ilike(invitationsTable.invitationCode, "PMA-%")).orderBy(desc(invitationsTable.id)).limit(1);
+  const next = Number(latest?.code.match(/PMA-(\d+)$/)?.[1] ?? 0) + 1;
   for (let attempt = 0; attempt < 20; attempt += 1) {
-    const code = makeCode("GUEST");
+    const code = `PMA-${String(next + attempt).padStart(3, "0")}`;
     const token = crypto.randomBytes(32).toString("base64url");
-    const [match] = await db
-      .select({ id: invitationsTable.id })
-      .from(invitationsTable)
-      .where(or(eq(invitationsTable.invitationCode, code), eq(invitationsTable.secureToken, token)))
-      .limit(1);
-    if (!match) return { code, token };
-  }
-  throw new Error("Unable to generate a unique invitation");
-}
-
-async function makeInvitationForName(name: string) {
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const code = `${makeCode(name)}`;
-    const token = crypto.randomBytes(32).toString("base64url");
-    const [match] = await db
-      .select({ id: invitationsTable.id })
-      .from(invitationsTable)
-      .where(or(eq(invitationsTable.invitationCode, code), eq(invitationsTable.secureToken, token)))
-      .limit(1);
+    const [match] = await db.select({ id: invitationsTable.id }).from(invitationsTable).where(or(eq(invitationsTable.invitationCode, code), eq(invitationsTable.secureToken, token))).limit(1);
     if (!match) return { code, token };
   }
   throw new Error("Unable to generate a unique invitation");
@@ -363,7 +342,7 @@ router.get("/public/invitations/:token", async (req, res): Promise<void> => {
 });
 
 router.get("/public/invitations/code/:code", async (req, res): Promise<void> => {
-  const code = String(req.params.code ?? "").trim().toUpperCase();
+  const code = normalizeInvitationCode(String(req.params.code ?? ""));
   if (code.length < 4) {
     res.status(404).json({ error: "Invitation not found" });
     return;
@@ -380,7 +359,7 @@ router.get("/public/invitations/code/:code", async (req, res): Promise<void> => 
 });
 
 router.post("/public/invitations/:token/rsvp", async (req, res): Promise<void> => {
-  const params = SubmitPaymentProofParams.safeParse(req.params);
+  const params = SubmitRsvpParams.safeParse(req.params);
   const body = SubmitRsvpBody.safeParse(req.body);
   if (!params.success || !body.success) {
     res.status(400).json({ error: "Invalid RSVP" });
@@ -396,6 +375,10 @@ router.post("/public/invitations/:token/rsvp", async (req, res): Promise<void> =
   }
   if (current.status === "disabled") {
     res.status(409).json({ error: "This invitation is disabled" });
+    return;
+  }
+  if (current.rsvpStatus !== "pending") {
+    res.status(409).json({ error: "RSVP has already been submitted", rsvpStatus: current.rsvpStatus });
     return;
   }
   const [invitation] = await db
